@@ -58,7 +58,7 @@ const BUILDINGS=[
 {id:16,img:'missile_silo.png',base:{m:20000,c:20000,d:1000},factor:2.0}
 ];
 const BUILDING_ORDER=[0,1,2,3,4,8,9,10,5,7,11,6,12,13,14,15];
-const MRC_BUILDING_IDS=new Set([1,2,3,6,7,8]);
+const MRC_BUILDING_IDS=new Set([1,2,3]);
 const MOON_BUILDINGS=[
 {id:44,name:'Фабрика роботов',img:'robot_factory.png',base:{m:400,c:120,d:200},factor:2.0},
 {id:45,name:'Верфь',img:'shipyard.png',base:{m:400000,c:200000,d:100000},factor:2.0},
@@ -266,7 +266,6 @@ const LF_RESEARCH_FILENAMES={
 4113:'efficient_swarm_intelligence.png',4114:'speed_boost_large_cargo.png',4115:'gravitational_sensors.png',
 4116:'speed_boost_battleship.png',4117:'psionic_shield_matrix.png',4118:'kaelesh_explorer_enhancement.png'
 };
-const MRC_REDUCABLE_IDS=new Set([2001,2002]);
 const RACES=['humans','rocktal','mechas','kaelesh'];
 const RACE_PREFIX={humans:'1',rocktal:'2',mechas:'3',kaelesh:'4'};
 const BONUS_INPUT_IDS=['megalithLevel','mrcLevel','runoLevel','humansLevel','mechasLevel','kaeleshLevel'];
@@ -881,10 +880,9 @@ function recalcLfTable(tbodyId,isBuilding){
 const tbody=$(tbodyId);
 if(!tbody)return;
 let tm=0,tc=0,td=0,tp=0;
-let megalithLevel=0,mrcLevel=0,rsrRdc=0;
+let megalithLevel=0,rsrRdc=0;
 if(currentLifeformRace==='rocktal'){
 megalithLevel=parseInputValue($('megalithLevel'));
-mrcLevel=parseInputValue($('mrcLevel'));
 rsrRdc=0.0025*parseInputValue($('runoLevel'));
 }else{
 const inputId={humans:'humansLevel',mechas:'mechasLevel',kaelesh:'kaeleshLevel'}[currentLifeformRace];
@@ -914,7 +912,6 @@ if(isBuilding){
 let bldRdc=0;
 if(currentLifeformRace==='rocktal'){
 bldRdc=0.01*megalithLevel;
-if(MRC_REDUCABLE_IDS.has(techId))bldRdc+=0.005*mrcLevel;
 }
 if(to>from){
 cost=getBuildCostLF(techId,from,to,0,bldRdc);
@@ -1190,7 +1187,7 @@ try{this.setSelectionRange(pos,pos);}catch(e){}
 };
 inp.addEventListener('input',formatAndSetCursor);
 inp.addEventListener('blur',function(){
-if(this.value===''||this.value==='-'){this.value='';return;}
+if(this.value===' '||this.value==='-'){this.value='';return;}
 const num=parseNumberInput(this.value);
 this.value=num===0?'':formatWithDotsRaw(num);
 this.dispatchEvent(new Event('change',{bubbles:true}));
@@ -1255,8 +1252,9 @@ if(!el||el._bonusBound)return;
 const handler=debounce(()=>{
 if(['humansLevel','mechasLevel','kaeleshLevel','runoLevel'].includes(id)){
 recalcAllLfResearch();
-}else if(id==='megalithLevel'||id==='mrcLevel'){
+}else if(id==='megalithLevel'){
 recalcAllLfBuildings();
+}else if(id==='mrcLevel'){
 recalcAllBuildings();
 }
 updateBoxesNeeded();
