@@ -1,632 +1,544 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="pageTitle">OGame Калькулятор</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OGame Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+<video id="bgVideo" autoplay muted loop playsinline src="images/background.webm"></video>
+<div class="stars"></div>
+<div class="grid-overlay"></div>
+<div class="vignette"></div>
+<noscript><div class="nojs-banner">Для работы калькулятора необходим JavaScript.</div></noscript>
 
-  <video id="bgVideo" autoplay muted loop playsinline src="images/background.webm"></video>
-  <div class="stars"></div>
-  <div class="grid-overlay"></div>
-  <div class="vignette"></div>
+<div class="zoom-controls">
+<button id="globalZoomIn" type="button" data-i18n-aria="zoomIn">+</button>
+<button id="globalZoomOut" type="button" data-i18n-aria="zoomOut">−</button>
+<button id="globalZoomReset" type="button" data-i18n-aria="zoomReset">↻</button>
+<button class="settings-toggle-btn" id="settingsToggle" type="button" data-i18n-aria="settingsTitle">⚙</button>
+</div>
 
-  <noscript>
-    <div class="nojs-banner" data-i18n="noJsMessage">Для работы калькулятора необходим JavaScript.</div>
-  </noscript>
+<div class="language-container">
+<div class="lang-dropdown">
+<button id="langToggle" type="button" aria-expanded="false" data-i18n-aria="languageSelectLabel">
+<span id="currentLang"></span>
+<span class="dropdown-icon">▼</span>
+</button>
+<div class="dropdown-menu" id="langDropdownMenu"></div>
+</div>
+</div>
 
-  <nav class="main-nav" aria-label="Main navigation">
-    <button class="nav-btn active" data-view="costs" data-i18n="tabBuildings">Постройки</button>
-    <button class="nav-btn" data-view="expeditions" data-i18n="tabExpeditions">Экспедиция</button>
-  </nav>
+<nav class="main-nav">
+<button class="nav-btn active" data-view="costs" type="button" data-i18n="tabBuildings">Постройки</button>
+<button class="nav-btn" data-view="expeditions" type="button" data-i18n="tabExpeditions">Экспедиция</button>
+<button class="nav-btn" data-view="houses" type="button">Домики</button>
+</nav>
 
-  <div class="zoom-controls">
-    <button id="globalZoomIn" data-i18n-aria="zoomIn" aria-label="Увеличить">+</button>
-    <button id="globalZoomOut" data-i18n-aria="zoomOut" aria-label="Уменьшить">−</button>
-    <button id="globalZoomReset" data-i18n-aria="zoomReset" aria-label="Сбросить вид">↻</button>
-    <button id="settingsToggle" class="settings-toggle-btn" data-i18n-aria="settingsTitle" aria-label="Настройки">⚙</button>
-  </div>
+<div id="tableWrapper" class="table-wrapper" style="display:none;">
+<div id="dragHandle" class="drag-handle" data-i18n="dragHandleLabel">Переместить таблицу</div>
+<div class="box-row">
+<div class="box-group--main">
+<img class="box-icon" src="images/metalbox.png" alt="">
+<span class="label" data-i18n="boxesLabel">Коробка с металлом</span>
+<input type="text" id="boxValue" maxlength="15" data-i18n-ph="boxValuePh" placeholder="Металла в 1 коробке">
+</div>
+<div class="box-group--calc">
+<div class="box-line">
+<span class="info-row"><span data-i18n="needOpen">Нужно открыть:</span> <span id="boxesNeeded">—</span> <span data-i18n="boxes">коробок</span></span>
+<span class="arrow">→</span>
+<select id="baseCurrencySelector" class="currency-selector" data-i18n-aria="baseCurrencyLabel">
+<option value="TRY">TRY</option>
+<option value="BYN">BYN</option>
+<option value="RUB">RUB</option>
+<option value="USD">USD</option>
+<option value="EUR">EUR</option>
+</select>
+<span id="boxesCostTL">—</span>
+<span class="arrow">→</span>
+<select id="currencySelector" class="currency-selector" data-i18n-aria="targetCurrencyLabel">
+<option value="BYN">BYN</option>
+<option value="RUB">RUB</option>
+<option value="USD">USD</option>
+<option value="EUR">EUR</option>
+<option value="TRY">TRY</option>
+</select>
+<span id="currencyValue">0</span><span id="currencySymbol">Br</span>
+</div>
+<div class="box-line box-line--sub">
+<span class="info-row"><span data-i18n="leftoverLabel">Остаток ТМ</span> <span id="leftoverTmValue">—</span></span>
+<label class="sum-toggle"><input type="checkbox" id="sumAllTabsCheckbox"><span class="ui-check"></span><span data-i18n="sumAllTabs">Сумма по всем вкладкам</span></label>
+</div>
+</div>
+</div>
+<div class="table-frame">
+<div class="tabs-left" id="tabsLeft">
+<button class="tab-btn active" data-tab="buildings" type="button" data-i18n="tabBuildings">Постройки</button>
+<button class="tab-btn" data-tab="research" type="button" data-i18n="tabResearch">Исследования</button>
+<button class="tab-btn" data-tab="fleet" type="button" data-i18n="tabFleet">Флот</button>
+<button class="tab-btn" data-tab="lifeforms" type="button" data-i18n="tabLifeforms">Формы жизни</button>
+</div>
+<div class="tab-panels">
 
-  <div class="language-container">
-    <div class="lang-dropdown">
-      <button id="langToggle" aria-expanded="false" aria-haspopup="true">
-        <span id="currentLang"></span>
-        <span class="dropdown-icon">▼</span>
-      </button>
-      <div id="langDropdownMenu" class="dropdown-menu" role="menu"></div>
-    </div>
-  </div>
+<div id="tabBuildings" class="tab-content active">
+<div class="building-subtabs">
+<button class="building-subtab-btn active" data-building-tab="planet" type="button" data-i18n="planetTab">🪐 Планета</button>
+<button class="building-subtab-btn" data-building-tab="moon" type="button" data-i18n="moonTab">🌙 Луна</button>
+</div>
+<div id="planetBuildingsContent" class="building-subtab-content active">
+<table class="cost-table">
+<thead>
+<tr>
+<th data-i18n="building">Постройка</th>
+<th data-i18n="from">От</th>
+<th data-i18n="to">До</th>
+<th data-i18n="planets">Планеты</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody id="tbodyBuildings"></tbody>
+<tbody>
+<tr class="summary-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="total">Итого</td>
+<td class="m" id="sumMetalB"><span class="val-metal">0</span></td>
+<td class="c" id="sumCrystalB"><span class="val-crystal">0</span></td>
+<td class="d" id="sumDeutB"><span class="val-deut">0</span></td>
+<td class="p" id="sumPointsB">0</td>
+</tr>
+<tr class="total-metal-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span id="sumTotalMetalB">0</span></td>
+<td class="p"></td>
+</tr>
+<tr class="sum-all-tabs-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
+<td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
+<td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
+<td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
+<td class="p"><span class="sum-all-tabs-points">0</span></td>
+</tr>
+<tr class="sum-all-tabs-total-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span class="sum-all-tabs-total">0</span></td>
+<td class="p"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="moonBuildingsContent" class="building-subtab-content">
+<table class="cost-table">
+<thead>
+<tr>
+<th data-i18n="building">Постройка</th>
+<th data-i18n="from">От</th>
+<th data-i18n="to">До</th>
+<th data-i18n="moons">Луны</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody id="tbodyMoonBuildings"></tbody>
+<tbody>
+<tr class="summary-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="total">Итого</td>
+<td class="m" id="sumMetalMoon"><span class="val-metal">0</span></td>
+<td class="c" id="sumCrystalMoon"><span class="val-crystal">0</span></td>
+<td class="d" id="sumDeutMoon"><span class="val-deut">0</span></td>
+<td class="p" id="sumPointsMoon">0</td>
+</tr>
+<tr class="total-metal-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span id="sumTotalMetalMoon">0</span></td>
+<td class="p"></td>
+</tr>
+<tr class="sum-all-tabs-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
+<td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
+<td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
+<td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
+<td class="p"><span class="sum-all-tabs-points">0</span></td>
+</tr>
+<tr class="sum-all-tabs-total-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span class="sum-all-tabs-total">0</span></td>
+<td class="p"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
-  <div id="tableWrapper" class="table-wrapper">
-    <div class="drag-handle" id="dragHandle" data-i18n="dragHandleLabel">Переместить таблицу</div>
+<div id="tabResearch" class="tab-content">
+<div class="tm-row">
+<label for="tmInput" data-i18n="tmLabel">Тёмная материя</label>
+<input type="text" id="tmInput" maxlength="9" placeholder="72810">
+<span id="tmTotal">Итого: 0</span>
+</div>
+<table class="cost-table">
+<thead>
+<tr>
+<th data-i18n="research">Исследование</th>
+<th data-i18n="from">От</th>
+<th data-i18n="to">До</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody id="tbodyResearch"></tbody>
+<tbody>
+<tr class="summary-row regular-total-row">
+<td colspan="3" class="sum-label" data-i18n="total">Итого</td>
+<td class="m" id="sumMetalR"><span class="val-metal">0</span></td>
+<td class="c" id="sumCrystalR"><span class="val-crystal">0</span></td>
+<td class="d" id="sumDeutR"><span class="val-deut">0</span></td>
+<td class="p" id="sumPointsR">0</td>
+</tr>
+<tr class="total-metal-row regular-total-row">
+<td colspan="3" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span id="sumTotalMetalR">0</span></td>
+<td class="p"></td>
+</tr>
+<tr class="sum-all-tabs-row" style="display:none;">
+<td colspan="3" class="sum-label" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
+<td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
+<td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
+<td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
+<td class="p"><span class="sum-all-tabs-points">0</span></td>
+</tr>
+<tr class="sum-all-tabs-total-row" style="display:none;">
+<td colspan="3" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span class="sum-all-tabs-total">0</span></td>
+<td class="p"></td>
+</tr>
+</tbody>
+</table>
+</div>
 
-    <div class="box-row">
-      <div class="box-group--main">
-        <div class="label">
-          <img src="images/metalbox.png" alt="" class="icon">
-          <span data-i18n="boxesLabel">Коробка с металлом</span>
-        </div>
-        <input type="text" id="boxValue" data-i18n-ph="boxValuePh" placeholder="Металла в 1 коробке">
-      </div>
+<div id="tabFleet" class="tab-content">
+<table id="shipsTable">
+<thead>
+<tr>
+<th data-i18n="ship">Корабль</th>
+<th data-i18n="qty">Количество</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
 
-      <div class="box-group--calc">
-        <div class="box-line">
-          <span data-i18n="needOpen">Нужно открыть:</span>
-          <span id="boxesNeeded">—</span>
-          <span data-i18n="boxes">коробок</span>
-          <span class="arrow">→</span>
-          <select id="baseCurrencySelector" class="currency-selector" data-i18n-aria="baseCurrencyLabel" aria-label="Base currency">
-            <option value="TRY">TRY</option>
-            <option value="BYN">BYN</option>
-            <option value="RUB">RUB</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-          </select>
-          <span id="boxesCostTL">—</span>
-          <span class="arrow">→</span>
-          <select id="currencySelector" class="currency-selector" data-i18n-aria="targetCurrencyLabel" aria-label="Target currency">
-            <option value="BYN">BYN</option>
-            <option value="RUB">RUB</option>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="TRY">TRY</option>
-          </select>
-          <span class="currency-result">
-            <span id="currencyValue">0</span>
-            <span id="currencySymbol" class="currency-symbol">Br</span>
-          </span>
-        </div>
+<div id="tabLifeforms" class="tab-content">
+<div class="lf-toolbar">
+<div class="lf-subtabs">
+<button class="lf-subtab-btn active" data-subtab="lf-buildings" type="button" data-i18n="lfTabBuildings">Постройки</button>
+<button class="lf-subtab-btn" data-subtab="lf-research" type="button" data-i18n="lfTabResearch">Исследования</button>
+</div>
+<div class="lf-bonuses" id="lfBonuses"></div>
+<div class="lf-select-wrap">
+<select id="lifeformSelect" class="lifeform-select">
+<option value="humans" data-i18n="humans">Люди</option>
+<option value="rocktal" data-i18n="rocktal">Рок'тал</option>
+<option value="mechas" data-i18n="mechas">Мехи</option>
+<option value="kaelesh" data-i18n="kaelesh">Кэлиш</option>
+</select>
+</div>
+</div>
+<div id="lf-buildings" class="subtab-content active">
+<table class="cost-table">
+<thead>
+<tr>
+<th data-i18n="lfBuilding">Постройка</th>
+<th data-i18n="from">От</th>
+<th data-i18n="to">До</th>
+<th data-i18n="planets">Планеты</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody id="tbodyLfBuildings"></tbody>
+<tbody>
+<tr class="summary-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="total">Итого</td>
+<td class="m" id="sumMetalLfB"><span class="val-metal">0</span></td>
+<td class="c" id="sumCrystalLfB"><span class="val-crystal">0</span></td>
+<td class="d" id="sumDeutLfB"><span class="val-deut">0</span></td>
+<td class="p" id="sumPointsLfB">0</td>
+</tr>
+<tr class="total-metal-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span id="sumTotalMetalLfB">0</span></td>
+<td class="p"></td>
+</tr>
+<tr class="sum-all-tabs-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
+<td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
+<td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
+<td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
+<td class="p"><span class="sum-all-tabs-points">0</span></td>
+</tr>
+<tr class="sum-all-tabs-total-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span class="sum-all-tabs-total">0</span></td>
+<td class="p"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="lf-research" class="subtab-content">
+<table class="cost-table">
+<thead>
+<tr>
+<th data-i18n="lfResearch">Исследование</th>
+<th data-i18n="from">От</th>
+<th data-i18n="to">До</th>
+<th data-i18n="planets">Планеты</th>
+<th class="th-res"><img src="images/metal.png" alt=""><span data-i18n="metal">Металл</span></th>
+<th class="th-res"><img src="images/crystal.png" alt=""><span data-i18n="crystal">Кристалл</span></th>
+<th class="th-res"><img src="images/deuterium.png" alt=""><span data-i18n="deut">Дейтерий</span></th>
+<th data-i18n="points">Очки</th>
+</tr>
+</thead>
+<tbody id="tbodyLfResearch"></tbody>
+<tbody>
+<tr class="summary-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="total">Итого</td>
+<td class="m" id="sumMetalLfR"><span class="val-metal">0</span></td>
+<td class="c" id="sumCrystalLfR"><span class="val-crystal">0</span></td>
+<td class="d" id="sumDeutLfR"><span class="val-deut">0</span></td>
+<td class="p" id="sumPointsLfR">0</td>
+</tr>
+<tr class="total-metal-row regular-total-row">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span id="sumTotalMetalLfR">0</span></td>
+<td class="p"></td>
+</tr>
+<tr class="sum-all-tabs-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
+<td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
+<td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
+<td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
+<td class="p"><span class="sum-all-tabs-points">0</span></td>
+</tr>
+<tr class="sum-all-tabs-total-row" style="display:none;">
+<td colspan="4" class="sum-label" data-i18n="totalInMetal">Всего в металле</td>
+<td colspan="3"><span class="sum-all-tabs-total">0</span></td>
+<td class="p"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
-        <div class="box-line box-line--sub">
-          <div class="info-row">
-            <span data-i18n="leftoverLabel">Остаток ТМ</span>
-            <span id="leftoverTmValue" class="tm-left">—</span>
-          </div>
-          <label class="sum-toggle">
-            <input type="checkbox" id="sumAllTabsCheckbox">
-            <span class="ui-check"></span>
-            <span data-i18n="sumAllTabs">Сумма по всем вкладкам</span>
-          </label>
-        </div>
-      </div>
-    </div>
+</div>
+</div>
+</div>
 
-    <div class="table-frame">
-      <div class="tabs-left" id="tabsLeft">
-        <button class="tab-btn active" data-tab="buildings" data-i18n="tabBuildings" aria-selected="true" tabindex="0">Постройки</button>
-        <button class="tab-btn" data-tab="research" data-i18n="tabResearch" aria-selected="false" tabindex="-1">Исследования</button>
-        <button class="tab-btn" data-tab="fleet" data-i18n="tabFleet" aria-selected="false" tabindex="-1">Флот</button>
-        <button class="tab-btn" data-tab="lifeforms" data-i18n="tabLifeforms" aria-selected="false" tabindex="-1">Формы жизни</button>
-      </div>
+<div id="expeditionsWrapper" style="display:none;">
+<div id="dragHandleExpeditions" class="drag-handle" data-i18n="dragHandleLabel">Переместить таблицу</div>
+<div id="settings-panel">
+<div class="settings-title">Калькулятор Экспедиции OGame</div>
+<div class="exp-top">
+<div class="exp-field exp-field--top">
+<label for="highTop" data-i18n="expeditionsTopPlayerLabel">У самого сильного игрока</label>
+<span class="input-line">
+<select id="highTop">
+<option value="40000">&lt; 10.000</option>
+<option value="500000">&lt; 100.000</option>
+<option value="1200000">&lt; 1.000.000</option>
+<option value="1800000">&lt; 5.000.000</option>
+<option value="2400000">&lt; 25.000.000</option>
+<option value="3000000">&lt; 50.000.000</option>
+<option value="3600000">&lt; 75.000.000</option>
+<option value="4200000">&lt; 100.000.000</option>
+<option value="5000000">&gt; 100.000.000</option>
+</select>
+<span class="suffix" data-i18n="expeditionsPointsSuffix">очков</span>
+</span>
+</div>
+</div>
+<div class="exp-header-grid">
+<div class="exp-field">
+<label for="player-class" data-i18n="expeditionsPlayerClass">Класс:</label>
+<span class="input-line">
+<select id="player-class">
+<option value="0">Исследователь</option>
+<option value="1">Коллекционер</option>
+<option value="2">Другой</option>
+</select>
+</span>
+</div>
+<div class="exp-field">
+<label for="universe-speed" data-i18n="expeditionsUniverseSpeed">Скорость вселенной:</label>
+<span class="input-line">
+<select id="universe-speed">
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option>
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option>
+<option value="9">9</option>
+<option value="10">10</option>
+</select>
+</span>
+</div>
+<div class="exp-field exp-field--hyper">
+<label for="tech_hyper-level" data-i18n="expeditionsHyperTech">Уровень Гиперпространственной технологии:</label>
+<span class="input-line">
+<input type="text" id="tech_hyper-level" placeholder="0" maxlength="3">
+</span>
+</div>
+</div>
+<div class="exp-grid">
+<div class="exp-field">
+<label for="percent-resources" data-i18n="expeditionsResourceBonus">Бонус к поиску ресурсов:</label>
+<span class="input-line"><input type="text" id="percent-resources" placeholder="0"><span class="suffix">%</span></span>
+</div>
+<div class="exp-field">
+<label for="percent-ships" data-i18n="expeditionsShipBonus">Бонус к поиску кораблей:</label>
+<span class="input-line"><input type="text" id="percent-ships" placeholder="0"><span class="suffix">%</span></span>
+</div>
+<div class="exp-field">
+<label for="class-bonus-collector" data-i18n="expeditionsCollectorBonus">Бонус класса Коллекционер:</label>
+<span class="input-line"><input type="text" id="class-bonus-collector" placeholder="0"><span class="suffix">%</span></span>
+</div>
+<div class="exp-field">
+<label for="class-bonus-discoverer" data-i18n="expeditionsDiscovererBonus">Бонус класса Исследователь:</label>
+<span class="input-line"><input type="text" id="class-bonus-discoverer" placeholder="0"><span class="suffix">%</span></span>
+</div>
+<div class="exp-field">
+<label for="dark-matter-discovery-bonus" data-i18n="expeditionsDarkMatterBonus">Бонус поиска Тёмной Материи:</label>
+<span class="input-line"><input type="text" id="dark-matter-discovery-bonus" placeholder="0"><span class="suffix">%</span></span>
+</div>
+<div class="exp-field">
+<label for="resource-discovery-booster" data-i18n="expeditionsResourceBooster">Бустер поиска ресурсов:</label>
+<span class="input-line">
+<select id="resource-discovery-booster">
+<option value="0">0%</option>
+<option value="5">5%</option>
+<option value="10">10%</option>
+<option value="15">15%</option>
+<option value="20">20%</option>
+<option value="25">25%</option>
+<option value="30">30%</option>
+<option value="35">35%</option>
+<option value="40">40%</option>
+</select>
+</span>
+</div>
+</div>
+<div id="max_points"></div>
+<div id="lf-bonuses-accordion">
+<h3 class="ui-accordion-header">
+<span class="ui-icon ui-icon-triangle-1-e"></span>
+<a href="#accordion-lf-prm"><span>Повышение характеристик кораблей (в %)</span></a>
+</h3>
+<div id="accordion-lf-prm">
+<div id="lf-ships-bonuses"></div>
+</div>
+</div>
+</div>
+<div id="data-panel">
+<div class="data-title">Состав флота для экспедиции</div>
+<table id="data-table">
+<thead>
+<tr>
+<th>Тип</th>
+<th>Количество</th>
+<th>Корабль может быть найден?</th>
+<th>Может быть найдено кораблей (max)</th>
+</tr>
+</thead>
+<tbody id="expeditionsFleetBody"></tbody>
+</table>
+</div>
+</div>
 
-      <div class="tab-panels">
+<div id="housesWrapper" class="houses-wrapper" style="display:none;">
+<div id="dragHandleHouses" class="drag-handle" data-i18n="dragHandleLabel">Переместить таблицу</div>
+<div class="houses-panel" id="houses-panel">
+<div id="housesRaceSwitch"></div>
+<div id="housesContent"></div>
+</div>
+</div>
 
-        <div id="tabBuildings" class="tab-content active">
-          <div class="building-subtabs">
-            <button class="building-subtab-btn active" data-building-tab="planet" data-i18n="planetTab">🪐 Планета</button>
-            <button class="building-subtab-btn" data-building-tab="moon" data-i18n="moonTab">🌙 Луна</button>
-          </div>
+<div class="settings-modal" id="settingsModal">
+<div class="settings-modal__backdrop"></div>
+<div class="settings-modal__content">
+<div class="settings-modal__header">
+<div class="settings-modal__title" data-i18n="settingsTitle">Настройки калькулятора</div>
+<button class="settings-modal__close" id="settingsModalClose" type="button" data-i18n-aria="settingsClose">✕</button>
+</div>
+<div class="settings-modal__body">
+<fieldset class="settings-modal__section">
+<legend data-i18n="tmLabel">Тёмная материя</legend>
+<div class="settings-modal__row">
+<label for="cfgTmPerBox" data-i18n="settingsTmPerBox">ТМ за одну коробку</label>
+<input class="settings-modal__input" id="cfgTmPerBox" type="text">
+</div>
+<div class="settings-modal__row">
+<label for="cfgTmPackSize" data-i18n="settingsTmPackSize">ТМ в паке</label>
+<input class="settings-modal__input" id="cfgTmPackSize" type="text">
+</div>
+<div class="settings-modal__row">
+<label for="cfgPackPriceTRY" data-i18n="settingsPackPriceTRY">Цена пака (TRY)</label>
+<input class="settings-modal__input" id="cfgPackPriceTRY" type="text">
+</div>
+</fieldset>
+<fieldset class="settings-modal__section">
+<legend data-i18n="settingsCurrencyRates">Курсы валют (относительно 1 BYN)</legend>
+<div class="settings-modal__row">
+<label for="cfgRateBYN" data-i18n="settingsBaseCurrency">BYN (базовая)</label>
+<input class="settings-modal__input" id="cfgRateBYN" type="text" value="1" disabled>
+</div>
+<div class="settings-modal__row">
+<label for="cfgRateRUB">RUB</label>
+<input class="settings-modal__input" id="cfgRateRUB" type="text">
+</div>
+<div class="settings-modal__row">
+<label for="cfgRateUSD">USD</label>
+<input class="settings-modal__input" id="cfgRateUSD" type="text">
+</div>
+<div class="settings-modal__row">
+<label for="cfgRateEUR">EUR</label>
+<input class="settings-modal__input" id="cfgRateEUR" type="text">
+</div>
+<div class="settings-modal__row">
+<label for="cfgRateTRY">TRY</label>
+<input class="settings-modal__input" id="cfgRateTRY" type="text">
+</div>
+</fieldset>
+</div>
+<div class="settings-modal__footer">
+<button class="settings-modal__btn settings-modal__btn--reset" id="settingsReset" type="button" data-i18n="settingsReset">Сбросить</button>
+<button class="settings-modal__btn settings-modal__btn--save" id="settingsSave" type="button" data-i18n="settingsSave">Сохранить</button>
+</div>
+</div>
+</div>
 
-          <div id="planetBuildingsContent" class="building-subtab-content active">
-            <table class="cost-table">
-              <thead>
-                <tr>
-                  <th data-i18n="building">Постройка</th>
-                  <th data-i18n="from">От</th>
-                  <th data-i18n="to">До</th>
-                  <th data-i18n="planets">Планеты</th>
-                  <th class="th-res">
-                    <img src="images/metal.png" alt="" class="icon">
-                    <span data-i18n="metal">Металл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/crystal.png" alt="" class="icon">
-                    <span data-i18n="crystal">Кристалл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/deuterium.png" alt="" class="icon">
-                    <span data-i18n="deut">Дейтерий</span>
-                  </th>
-                  <th data-i18n="points">Очки</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyBuildings"></tbody>
-              <tfoot>
-                <tr class="summary-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="total">Итого</td>
-                  <td class="m" id="sumMetalB"><span class="val-metal">0</span></td>
-                  <td class="c" id="sumCrystalB"><span class="val-crystal">0</span></td>
-                  <td class="d" id="sumDeutB"><span class="val-deut">0</span></td>
-                  <td class="p" id="sumPointsB">0</td>
-                </tr>
-                <tr class="total-metal-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span id="sumTotalMetalB">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
-                  <td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
-                  <td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
-                  <td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
-                  <td class="p"><span class="sum-all-tabs-points">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-total-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span class="sum-all-tabs-total">0</span></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+<div class="revision-badge">Version 1.1.0</div>
 
-          <div id="moonBuildingsContent" class="building-subtab-content">
-            <table class="cost-table">
-              <thead>
-                <tr>
-                  <th data-i18n="building">Постройка</th>
-                  <th data-i18n="from">От</th>
-                  <th data-i18n="to">До</th>
-                  <th data-i18n="moons">Луны</th>
-                  <th class="th-res">
-                    <img src="images/metal.png" alt="" class="icon">
-                    <span data-i18n="metal">Металл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/crystal.png" alt="" class="icon">
-                    <span data-i18n="crystal">Кристалл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/deuterium.png" alt="" class="icon">
-                    <span data-i18n="deut">Дейтерий</span>
-                  </th>
-                  <th data-i18n="points">Очки</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyMoonBuildings"></tbody>
-              <tfoot>
-                <tr class="summary-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="total">Итого</td>
-                  <td class="m" id="sumMetalMoon"><span class="val-metal">0</span></td>
-                  <td class="c" id="sumCrystalMoon"><span class="val-crystal">0</span></td>
-                  <td class="d" id="sumDeutMoon"><span class="val-deut">0</span></td>
-                  <td class="p" id="sumPointsMoon">0</td>
-                </tr>
-                <tr class="total-metal-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span id="sumTotalMetalMoon">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
-                  <td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
-                  <td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
-                  <td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
-                  <td class="p"><span class="sum-all-tabs-points">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-total-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span class="sum-all-tabs-total">0</span></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        <div id="tabResearch" class="tab-content">
-          <div class="tm-row">
-            <label for="tmInput" data-i18n="tmLabel">Тёмная материя</label>
-            <input type="text" id="tmInput" placeholder="72.810" autocomplete="off">
-            <span id="tmTotal">Итого: 0</span>
-          </div>
-          <table class="cost-table">
-            <thead>
-              <tr>
-                <th data-i18n="research">Исследование</th>
-                <th data-i18n="from">От</th>
-                <th data-i18n="to">До</th>
-                <th class="th-res">
-                  <img src="images/metal.png" alt="" class="icon">
-                  <span data-i18n="metal">Металл</span>
-                </th>
-                <th class="th-res">
-                  <img src="images/crystal.png" alt="" class="icon">
-                  <span data-i18n="crystal">Кристалл</span>
-                </th>
-                <th class="th-res">
-                  <img src="images/deuterium.png" alt="" class="icon">
-                  <span data-i18n="deut">Дейтерий</span>
-                </th>
-                <th data-i18n="points">Очки</th>
-              </tr>
-            </thead>
-            <tbody id="tbodyResearch"></tbody>
-            <tfoot>
-              <tr class="summary-row regular-total-row">
-                <td class="sum-label" colspan="3" data-i18n="total">Итого</td>
-                <td class="m" id="sumMetalR"><span class="val-metal">0</span></td>
-                <td class="c" id="sumCrystalR"><span class="val-crystal">0</span></td>
-                <td class="d" id="sumDeutR"><span class="val-deut">0</span></td>
-                <td class="p" id="sumPointsR">0</td>
-              </tr>
-              <tr class="total-metal-row regular-total-row">
-                <td class="sum-label" colspan="3" data-i18n="totalInMetal">Всего в металле</td>
-                <td class="m" colspan="4"><span id="sumTotalMetalR">0</span></td>
-              </tr>
-              <tr class="sum-all-tabs-row" style="display:none">
-                <td class="sum-label" colspan="3" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
-                <td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
-                <td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
-                <td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
-                <td class="p"><span class="sum-all-tabs-points">0</span></td>
-              </tr>
-              <tr class="sum-all-tabs-total-row" style="display:none">
-                <td class="sum-label" colspan="3" data-i18n="totalInMetal">Всего в металле</td>
-                <td class="m" colspan="4"><span class="sum-all-tabs-total">0</span></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div id="tabFleet" class="tab-content">
-          <table id="shipsTable" class="cost-table">
-            <thead>
-              <tr>
-                <th data-i18n="ship">Корабль</th>
-                <th data-i18n="qty">Количество</th>
-                <th class="th-res">
-                  <img src="images/metal.png" alt="" class="icon">
-                  <span data-i18n="metal">Металл</span>
-                </th>
-                <th class="th-res">
-                  <img src="images/crystal.png" alt="" class="icon">
-                  <span data-i18n="crystal">Кристалл</span>
-                </th>
-                <th class="th-res">
-                  <img src="images/deuterium.png" alt="" class="icon">
-                  <span data-i18n="deut">Дейтерий</span>
-                </th>
-                <th data-i18n="points">Очки</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div id="tabLifeforms" class="tab-content">
-          <div class="lf-toolbar">
-            <div class="lf-subtabs">
-              <button class="lf-subtab-btn active" data-subtab="lf-buildings" data-i18n="lfTabBuildings">Постройки</button>
-              <button class="lf-subtab-btn" data-subtab="lf-research" data-i18n="lfTabResearch">Исследования</button>
-            </div>
-            <div id="lfBonuses" class="lf-bonuses"></div>
-            <div class="lf-select-wrap">
-              <select id="lifeformSelect" class="lifeform-select" data-i18n-aria="lfSelectLabel" aria-label="Lifeform">
-                <option value="humans" data-i18n="humans">Люди</option>
-                <option value="rocktal" data-i18n="rocktal">Рок'тал</option>
-                <option value="mechas" data-i18n="mechas">Мехи</option>
-                <option value="kaelesh" data-i18n="kaelesh">Кэлиш</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="lf-buildings" class="subtab-content active">
-            <table class="cost-table">
-              <thead>
-                <tr>
-                  <th data-i18n="lfBuilding">Постройка</th>
-                  <th data-i18n="from">От</th>
-                  <th data-i18n="to">До</th>
-                  <th data-i18n="planets">Планеты</th>
-                  <th class="th-res">
-                    <img src="images/metal.png" alt="" class="icon">
-                    <span data-i18n="metal">Металл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/crystal.png" alt="" class="icon">
-                    <span data-i18n="crystal">Кристалл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/deuterium.png" alt="" class="icon">
-                    <span data-i18n="deut">Дейтерий</span>
-                  </th>
-                  <th data-i18n="points">Очки</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyLfBuildings"></tbody>
-              <tfoot>
-                <tr class="summary-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="total">Итого</td>
-                  <td class="m" id="sumMetalLfB"><span class="val-metal">0</span></td>
-                  <td class="c" id="sumCrystalLfB"><span class="val-crystal">0</span></td>
-                  <td class="d" id="sumDeutLfB"><span class="val-deut">0</span></td>
-                  <td class="p" id="sumPointsLfB">0</td>
-                </tr>
-                <tr class="total-metal-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span id="sumTotalMetalLfB">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
-                  <td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
-                  <td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
-                  <td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
-                  <td class="p"><span class="sum-all-tabs-points">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-total-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span class="sum-all-tabs-total">0</span></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          <div id="lf-research" class="subtab-content">
-            <table class="cost-table">
-              <thead>
-                <tr>
-                  <th data-i18n="lfResearch">Исследование</th>
-                  <th data-i18n="from">От</th>
-                  <th data-i18n="to">До</th>
-                  <th data-i18n="planets">Планеты</th>
-                  <th class="th-res">
-                    <img src="images/metal.png" alt="" class="icon">
-                    <span data-i18n="metal">Металл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/crystal.png" alt="" class="icon">
-                    <span data-i18n="crystal">Кристалл</span>
-                  </th>
-                  <th class="th-res">
-                    <img src="images/deuterium.png" alt="" class="icon">
-                    <span data-i18n="deut">Дейтерий</span>
-                  </th>
-                  <th data-i18n="points">Очки</th>
-                </tr>
-              </thead>
-              <tbody id="tbodyLfResearch"></tbody>
-              <tfoot>
-                <tr class="summary-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="total">Итого</td>
-                  <td class="m" id="sumMetalLfR"><span class="val-metal">0</span></td>
-                  <td class="c" id="sumCrystalLfR"><span class="val-crystal">0</span></td>
-                  <td class="d" id="sumDeutLfR"><span class="val-deut">0</span></td>
-                  <td class="p" id="sumPointsLfR">0</td>
-                </tr>
-                <tr class="total-metal-row regular-total-row">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span id="sumTotalMetalLfR">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="sumAllTabs">Сумма по всем вкладкам</td>
-                  <td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td>
-                  <td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td>
-                  <td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td>
-                  <td class="p"><span class="sum-all-tabs-points">0</span></td>
-                </tr>
-                <tr class="sum-all-tabs-total-row" style="display:none">
-                  <td class="sum-label" colspan="4" data-i18n="totalInMetal">Всего в металле</td>
-                  <td class="m" colspan="4"><span class="sum-all-tabs-total">0</span></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div id="expeditionsWrapper" style="display:none">
-    <div class="drag-handle" id="dragHandleExpeditions" data-i18n="dragHandleLabel">Переместить таблицу</div>
-
-    <div id="settings-panel">
-      <h2 class="settings-title" data-i18n="expeditionsSettingsTitle">Калькулятор Экспедиции OGame</h2>
-
-      <div class="expeditions-settings-section exp-top">
-        <div class="exp-field exp-field--top">
-          <label for="highTop" data-i18n="expeditionsTopPlayerLabel">У самого сильного игрока</label>
-          <div class="input-line">
-            <select id="highTop">
-              <option value="40000" data-i18n="expeditionsHighTop1">&lt; 10.000</option>
-              <option value="500000" data-i18n="expeditionsHighTop2">&lt; 100.000</option>
-              <option value="1200000" data-i18n="expeditionsHighTop3">&lt; 1.000.000</option>
-              <option value="1800000" data-i18n="expeditionsHighTop4">&lt; 5.000.000</option>
-              <option value="2400000" data-i18n="expeditionsHighTop5">&lt; 25.000.000</option>
-              <option value="3000000" data-i18n="expeditionsHighTop6">&lt; 50.000.000</option>
-              <option value="3600000" data-i18n="expeditionsHighTop7">&lt; 75.000.000</option>
-              <option value="4200000" data-i18n="expeditionsHighTop8">&lt; 100.000.000</option>
-              <option value="5000000" data-i18n="expeditionsHighTop9">&gt; 100.000.000</option>
-            </select>
-            <span class="suffix" data-i18n="expeditionsPointsSuffix">очков</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="exp-header-grid">
-        <div class="exp-field">
-          <label for="player-class" data-i18n="expeditionsPlayerClass">Класс:</label>
-          <div class="input-line">
-            <select id="player-class">
-              <option value="0" data-i18n="expeditionsClassDiscoverer">Исследователь</option>
-              <option value="1" data-i18n="expeditionsClassCollector">Коллекционер</option>
-              <option value="2" data-i18n="expeditionsClassGeneral">Другой</option>
-            </select>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="universe-speed" data-i18n="expeditionsUniverseSpeed">Скорость вселенной:</label>
-          <div class="input-line">
-            <select id="universe-speed">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-        </div>
-        <div class="exp-field exp-field--hyper">
-          <label for="tech_hyper-level" data-i18n="expeditionsHyperTech">Уровень Гиперпространственной технологии:</label>
-          <div class="input-line">
-            <input type="text" id="tech_hyper-level" placeholder="0">
-          </div>
-        </div>
-      </div>
-
-      <div class="expeditions-settings-section exp-grid">
-        <div class="exp-field">
-          <label for="percent-resources" data-i18n="expeditionsResourceBonus">Бонус к поиску ресурсов:</label>
-          <div class="input-line">
-            <input type="text" id="percent-resources" placeholder="0">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="percent-ships" data-i18n="expeditionsShipBonus">Бонус к поиску кораблей:</label>
-          <div class="input-line">
-            <input type="text" id="percent-ships" placeholder="0">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="class-bonus-collector" data-i18n="expeditionsCollectorBonus">Бонус класса Коллекционер:</label>
-          <div class="input-line">
-            <input type="text" id="class-bonus-collector" placeholder="0">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="class-bonus-discoverer" data-i18n="expeditionsDiscovererBonus">Бонус класса Исследователь:</label>
-          <div class="input-line">
-            <input type="text" id="class-bonus-discoverer" placeholder="0">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="dark-matter-discovery-bonus" data-i18n="expeditionsDarkMatterBonus">Бонус поиска Тёмной Материи:</label>
-          <div class="input-line">
-            <input type="text" id="dark-matter-discovery-bonus" placeholder="0">
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="exp-field">
-          <label for="resource-discovery-booster" data-i18n="expeditionsResourceBooster">Бустер поиска ресурсов:</label>
-          <div class="input-line">
-            <select id="resource-discovery-booster">
-              <option value="0">0%</option>
-              <option value="5">5%</option>
-              <option value="10">10%</option>
-              <option value="15">15%</option>
-              <option value="20">20%</option>
-              <option value="25">25%</option>
-              <option value="30">30%</option>
-              <option value="35">35%</option>
-              <option value="40">40%</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div id="max_points">Может быть найдено ресурсов (max): 0</div>
-
-      <div id="lf-bonuses-accordion">
-        <div class="ui-accordion-header">
-          <span class="ui-icon ui-icon-triangle-1-e"></span>
-          <a href="#">
-            <span data-i18n="expeditionsShipBonuses">Повышение характеристик кораблей (в %)</span>
-          </a>
-        </div>
-        <div id="accordion-lf-prm">
-          <div id="lf-ships-bonuses"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="data-panel">
-      <h2 class="data-title" data-i18n="expeditionsFleetTitle">Состав флота для экспедиции</h2>
-      <table id="data-table">
-        <thead>
-          <tr>
-            <th data-i18n="shipType">Тип</th>
-            <th>
-              Количество
-              <button id="clearFleet" type="button" class="clear-fleet-mini" data-i18n-aria="clearFleet" aria-label="Очистить флот">✕</button>
-            </th>
-            <th data-i18n="canBeFound">Корабль может быть найден?</th>
-            <th data-i18n="maxCanBeFound">Может быть найдено кораблей (max)</th>
-          </tr>
-        </thead>
-        <tbody id="expeditionsFleetBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="settingsModal" class="settings-modal" role="dialog" aria-modal="true">
-    <div class="settings-modal__backdrop"></div>
-    <div class="settings-modal__content">
-      <div class="settings-modal__header">
-        <span class="settings-modal__title" data-i18n="settingsTitle">Настройки калькулятора</span>
-        <button id="settingsModalClose" class="settings-modal__close" data-i18n="settingsClose">✕</button>
-      </div>
-      <div class="settings-modal__body">
-        <fieldset class="settings-modal__section">
-          <legend data-i18n="tmLabel">Тёмная материя</legend>
-          <div class="settings-modal__row">
-            <label for="cfgTmPerBox" data-i18n="settingsTmPerBox">ТМ за одну коробку</label>
-            <input type="text" id="cfgTmPerBox" class="settings-modal__input">
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgTmPackSize" data-i18n="settingsTmPackSize">ТМ в паке</label>
-            <input type="text" id="cfgTmPackSize" class="settings-modal__input">
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgPackPriceTRY" data-i18n="settingsPackPriceTRY">Цена пака (TRY)</label>
-            <input type="text" id="cfgPackPriceTRY" class="settings-modal__input">
-          </div>
-        </fieldset>
-        <fieldset class="settings-modal__section">
-          <legend data-i18n="settingsCurrencyRates">Курсы валют (относительно 1 BYN)</legend>
-          <div class="settings-modal__row">
-            <label for="cfgRateBYN" data-i18n="settingsBaseCurrency">BYN (базовая)</label>
-            <input type="text" id="cfgRateBYN" class="settings-modal__input" disabled>
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgRateRUB">RUB</label>
-            <input type="text" id="cfgRateRUB" class="settings-modal__input">
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgRateUSD">USD</label>
-            <input type="text" id="cfgRateUSD" class="settings-modal__input">
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgRateEUR">EUR</label>
-            <input type="text" id="cfgRateEUR" class="settings-modal__input">
-          </div>
-          <div class="settings-modal__row">
-            <label for="cfgRateTRY">TRY</label>
-            <input type="text" id="cfgRateTRY" class="settings-modal__input">
-          </div>
-        </fieldset>
-      </div>
-      <div class="settings-modal__footer">
-        <button id="settingsReset" class="settings-modal__btn settings-modal__btn--reset" data-i18n="settingsReset">Сбросить</button>
-        <button id="settingsSave" class="settings-modal__btn settings-modal__btn--save" data-i18n="settingsSave">Сохранить</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="revision-badge">Version 1.09.0b</div>
-
-  <script src="languages.js"></script>
-  <script src="script.js"></script>
-  <script src="expeditions.js"></script>
+<script src="languages.js"></script>
+<script src="houses.js"></script>
+<script src="expeditions.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
