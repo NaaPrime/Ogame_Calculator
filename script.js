@@ -57,13 +57,14 @@ const BUILDINGS = [
 { id: 9, img: 'metal_storage.png', base: { m: 1000, c: 0, d: 0 }, factor: 2.0 },
 { id: 10, img: 'crystal_storage.png', base: { m: 1000, c: 500, d: 0 }, factor: 2.0 },
 { id: 11, img: 'deuterium_tank.png', base: { m: 1000, c: 1000, d: 0 }, factor: 2.0 },
+{ id: 17, img: 'anomaly_scanner.png', base: { m: 84, c: 42, d: 14 }, factor: 1.4 },
 { id: 12, img: 'research_lab.png', base: { m: 200, c: 400, d: 200 }, factor: 2.0 },
 { id: 13, img: 'terraformer.png', base: { m: 0, c: 50000, d: 100000 }, factor: 2.0 },
 { id: 14, img: 'alliance_depot.png', base: { m: 20000, c: 40000, d: 0 }, factor: 2.0 },
 { id: 15, img: 'dock.png', base: { m: 200, c: 0, d: 50 }, factor: 5.0 },
 { id: 16, img: 'missile_silo.png', base: { m: 20000, c: 20000, d: 1000 }, factor: 2.0 }
 ];
-const BUILDING_ORDER = [0, 1, 2, 3, 4, 8, 9, 10, 5, 7, 11, 6, 12, 13, 14, 15];
+const BUILDING_ORDER = [0, 1, 2, 3, 4, 8, 9, 10, 11, 5, 7, 12, 6, 13, 14, 15, 16];
 const MRC_BUILDING_IDS = new Set([1, 2, 3]);
 const MOON_BUILDINGS = [
 { id: 44, name: 'Фабрика роботов', img: 'robot_factory.png', base: { m: 400, c: 120, d: 200 }, factor: 2.0 },
@@ -385,12 +386,12 @@ cleaned = str.lastIndexOf(',') > str.lastIndexOf('.')
 } else if (hasComma) {
 cleaned = str.replace(/,/g, '.');
 } else if (hasDot) {
-const dotCount = (str.match(/\./g) || []).length;
+const dotCount = (str.match(/./g) || []).length;
 if (dotCount > 1) {
-cleaned = str.replace(/\./g, '');
+cleaned = str.replace(/./g, '');
 } else {
 const afterDot = str.slice(str.indexOf('.') + 1);
-cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/\./g, '') : str;
+cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/./g, '') : str;
 }
 } else {
 cleaned = str;
@@ -604,7 +605,7 @@ function sanitizeDiscountInput(value) {
 let s = String(value ?? '').trim().replace(',', '.');
 s = s.replace(/[^0-9.]/g, '');
 const dot = s.indexOf('.');
-if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
+if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/./g, '');
 if (s.startsWith('.')) s = '0' + s;
 s = s.replace(/^0+(?=\d)/, '');
 return s;
@@ -707,9 +708,10 @@ chip.title = normalizeLocalizedText(dict.transportCapacityLabel || 'Грузоп
 tdName.append(icon, nameSpan, chip);
 const tdCount = document.createElement('td');
 tdCount.className = 'transport-count';
+tdCount.colSpan = 2;
 tdCount.textContent = '0';
 const tdEmpty = document.createElement('td');
-tdEmpty.colSpan = Math.max(1, cols - 2);
+tdEmpty.colSpan = Math.max(1, cols - 3);
 tr.append(tdName, tdCount, tdEmpty);
 tr._transportRefs = { icon, chip, count: tdCount };
 const openEditor = (e) => {
