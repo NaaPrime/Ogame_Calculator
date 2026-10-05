@@ -724,37 +724,36 @@ background: var(--bg-input);
 border-color: var(--border-input);
 }
 .lf-bonuses input[type="text"]:focus {
-border-color: var(--lf);
-box-shadow: 0 0 10px rgba(176,122,255,0.4);
-background: rgba(176,122,255,0.12);
+border-color: var(--deut);
+box-shadow: 0 0 10px rgba(126,231,135,0.4);
+background: rgba(126,231,135,0.12);
 }
 .lf-select-wrap { display: flex; align-items: center; margin-left: auto; flex: none; }
 .lifeform-select {
-height: 30px; min-width: 100px;
-padding: 3px 28px 3px 12px;
-font-family: var(--font-display);
-font-size: 12px; font-weight: 700;
-color: #e2ccff;
-background-color: rgba(176,122,255,0.1);
-background-image: var(--arrow-purple);
-background-repeat: no-repeat;
-background-position: right 9px center;
-border: 1px solid rgba(176,122,255,0.5);
-border-radius: var(--radius-md);
-appearance: none; cursor: pointer;
-box-shadow: 0 0 12px rgba(176,122,255,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
-transition: all var(--transition);
+    height: 30px; min-width: 100px;
+    padding: 3px 28px 3px 12px;
+    font-family: var(--font-display);
+    font-size: 12px; font-weight: 700;
+    color: var(--text-primary);
+    background-color: var(--bg-input);
+    background-image: var(--arrow-blue);
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-md);
+    appearance: none; cursor: pointer;
+    transition: all var(--transition);
 }
 .lifeform-select:hover {
-border-color: var(--lf);
-box-shadow: 0 0 18px rgba(176,122,255,0.25);
-transform: translateY(-1px);
+    border-color: var(--accent-hover);
+    background-color: rgba(47,129,247,0.08);
 }
 .lifeform-select:focus {
-outline: none;
-box-shadow: 0 0 0 2px rgba(176,122,255,0.3), 0 0 20px rgba(176,122,255,0.25);
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(47,129,247,0.3);
 }
-.lifeform-select option { background: #161129; color: var(--text-primary); }
+.lifeform-select option { background: #101a2c; color: var(--text-primary); }
 #tbodyLfBuildings tr, #tbodyLfResearch tr { position: relative; transition: all var(--transition); }
 #tbodyLfBuildings tr:hover, #tbodyLfResearch tr:hover {
 background: rgba(176,122,255,0.08) !important;

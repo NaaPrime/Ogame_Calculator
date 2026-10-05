@@ -261,7 +261,7 @@ const LF_RESEARCH_FILENAMES = {
 2110: 'reinforced_diamond_drills.png', 2111: 'seismic_extraction_technology.png', 2112: 'magma_powered_supply_systems.png',
 2113: 'ionized_crystal_modules.png', 2114: 'optimized_mine_construction.png', 2115: 'diamond_energy_transmitter.png',
 2116: 'obsidian_shield_plating.png', 2117: 'rune_shields.png', 2118: 'rocktal_collector_enhancement.png',
-3101: 'catalyst_technology.png', 3102: 'plasma_drive.png', 3103: 'efficiency_module.png',
+3101: 'catalyser_technology.png', 3102: 'plasma_drive.png', 3103: 'efficiency_module.png',
 3104: 'warehouse_ai.png', 3105: 'general_repair_light_fighter.png', 3106: 'automated_transport_lines.png',
 3107: 'enhanced_drone_ai.png', 3108: 'experimental_recycling_technology.png', 3109: 'general_repair_cruiser.png',
 3110: 'gravitational_maneuver_autopilot.png', 3111: 'high_temperature_superconductors.png', 3112: 'general_repair_battleship.png',
@@ -386,12 +386,12 @@ cleaned = str.lastIndexOf(',') > str.lastIndexOf('.')
 } else if (hasComma) {
 cleaned = str.replace(/,/g, '.');
 } else if (hasDot) {
-const dotCount = (str.match(/./g) || []).length;
+const dotCount = (str.match(/\./g) || []).length;
 if (dotCount > 1) {
-cleaned = str.replace(/./g, '');
+cleaned = str.replace(/\./g, '');
 } else {
 const afterDot = str.slice(str.indexOf('.') + 1);
-cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/./g, '') : str;
+cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/\./g, '') : str;
 }
 } else {
 cleaned = str;
@@ -605,7 +605,7 @@ function sanitizeDiscountInput(value) {
 let s = String(value ?? '').trim().replace(',', '.');
 s = s.replace(/[^0-9.]/g, '');
 const dot = s.indexOf('.');
-if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/./g, '');
+if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
 if (s.startsWith('.')) s = '0' + s;
 s = s.replace(/^0+(?=\d)/, '');
 return s;
@@ -1525,6 +1525,7 @@ $('planetBuildingsContent')?.classList.toggle('active', tab === 'planet');
 $('moonBuildingsContent')?.classList.toggle('active', tab === 'moon');
 (tab === 'moon' ? recalcAllMoonBuildings : recalcAllBuildings)();
 updateBoxesNeeded();
+updateTransportNeededRows();
 safeSet('og_calc_active_building_tab', tab);
 });
 });
@@ -1693,6 +1694,7 @@ document.querySelectorAll('.lf-subtab-btn').forEach((b) => b.classList.toggle('a
 $('lf-buildings')?.classList.toggle('active', target === 'lf-buildings');
 $('lf-research')?.classList.toggle('active', target === 'lf-research');
 if (!skipRecalc) (target === 'lf-research' ? recalcAllLfResearch : recalcAllLfBuildings)();
+updateTransportNeededRows();
 }
 function setActiveTab(tab, skipRecalc = false) {
 document.querySelectorAll('.tab-btn').forEach((b) => {
@@ -1720,6 +1722,7 @@ recalcAllResearch();
 }
 }
 if (!skipRecalc) updateBoxesNeeded();
+updateTransportNeededRows();
 safeSet(KEYS.ACTIVE_TAB, tab);
 }
 function applyLang(lang, skipRebuild = false) {
@@ -1781,6 +1784,7 @@ window.panZoomHouses?.applyTransform();
 window.panZoomMain?.applyTransform();
 }
 safeSet('og_calc_active_view', newView);
+updateTransportNeededRows();
 updateBackgroundVideo(newView);
 }
 function getSumAllTabsMetalValue() {
