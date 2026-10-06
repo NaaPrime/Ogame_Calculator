@@ -381,7 +381,7 @@ const hasDot = str.includes('.');
 let cleaned;
 if (hasComma && hasDot) {
 cleaned = str.lastIndexOf(',') > str.lastIndexOf('.')
-? str.replace(/,/g, '').replace(',', '.')
+? str.replace(/\./g, '').replace(',', '.')
 : str.replace(/,/g, '');
 } else if (hasComma) {
 cleaned = str.replace(/,/g, '.');
@@ -744,31 +744,6 @@ actualCols = Array.from(headRow.cells).reduce((n, c) => n + (c.colSpan || 1), 0)
 const parent = totalRow.parentNode;
 parent.appendChild(createTransportNeededRow('large_cargo', dict, actualCols, source));
 parent.appendChild(createTransportNeededRow('small_cargo', dict, actualCols, source));
-decorateTotalMetalRow(totalRow);
-}
-function decorateTotalMetalRow(totalRow) {
-if (!totalRow || totalRow._sigmaAdded) return;
-const cell = Array.from(totalRow.cells).find((td) => td.querySelector('span[id^="sumTotal"]'));
-if (!cell) return;
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.className = 'sigma-toggle';
-btn.textContent = 'Σ';
-btn.title = normalizeLocalizedText(getDict().sumAllTabs || 'Сумма по всем вкладкам');
-btn.addEventListener('click', () => {
-const checkbox = $('sumAllTabsCheckbox');
-if (checkbox) {
-checkbox.checked = !checkbox.checked;
-checkbox.dispatchEvent(new Event('change'));
-} else {
-isSumAllTabsMode = !isSumAllTabsMode;
-safeSet(KEYS.SUM_ALL_TABS, String(isSumAllTabsMode));
-updateSumAllTabsRows();
-updateBoxesNeeded();
-}
-});
-cell.appendChild(btn);
-totalRow._sigmaAdded = true;
 }
 function openTransportCapacityEditor(tr, shipId) {
 if (!tr || tr._transportEditor) return;
@@ -849,6 +824,7 @@ else t = TOTALS[source] || emptyTotals();
 return addCapped(addCapped(t.m, t.c), t.d);
 }
 function updateTransportNeededRows() {
+if (batchRecalc) return;
 document.querySelectorAll('.transport-needed-row').forEach((tr) => {
 const shipId = tr.dataset.transport;
 const refs = tr._transportRefs;
@@ -1227,6 +1203,7 @@ computeFleet();
 batchRecalc = false;
 updateBoxesNeeded();
 updateSumAllTabsRows();
+updateTransportNeededRows();
 }
 function renderTable() {
 const tableBody = document.querySelector('#shipsTable tbody');
@@ -1867,7 +1844,6 @@ return cachedAggrRows;
 function updateSumAllTabsRows() {
 if (batchRecalc) return;
 const show = isSumAllTabsMode;
-document.querySelectorAll('.sigma-toggle').forEach((b) => b.classList.toggle('on', show));
 const rows = getAggrRows();
 rows.sumRows.forEach((r) => { r.style.display = show ? '' : 'none'; });
 rows.regularRows.forEach((r) => { r.style.display = show ? 'none' : ''; });

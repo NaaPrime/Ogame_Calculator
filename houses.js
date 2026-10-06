@@ -4,25 +4,19 @@ const LANG_KEY = 'og_calc_lang_v2';
 const RACE_KEY = 'og_calc_houses_race';
 const RACES = ['humans', 'rocktal', 'mechas', 'kaelesh'];
 const RACE_PREFIX = { humans: 1, rocktal: 2, mechas: 3, kaelesh: 4 };
-
-// ИСПРАВЛЕНО: базовые столбцы теперь свои для каждой расы (P001, P002, P004, P005)
 const BASE_COLS = {
-    humans: [1001, 1002, 1004, 1005],
-    rocktal: [2001, 2002, 2004, 2005],
-    mechas: [3001, 3002, 3004, 3005],
-    kaelesh: [4001, 4002, 4004, 4005]
+humans: [1001, 1002, 1004, 1005],
+rocktal: [2001, 2002, 2004, 2005],
+mechas: [3001, 3002, 3004, 3005],
+kaelesh: [4001, 4002, 4004, 4005]
 };
-
-// ИСПРАВЛЕНО: у kaelesh убран дубль 4002 (теперь в базе), заменён на 4007
 const EXTRA_COLS = {
-    humans: [1007, 1009, 1010],
-    rocktal: [2008, 2011],
-    mechas: [3008, 3009],
-    kaelesh: [4007, 4008, 4010]
+humans: [1007, 1009, 1010],
+rocktal: [2008, 2011],
+mechas: [3008, 3009],
+kaelesh: [4007, 4008, 4010]
 };
-
 const TIER_SIZE = 6;
-
 const ROWS = {
 humans: [
 [22,20,0,0,0,0,0,2886,206166,0,0,81474],
@@ -102,209 +96,194 @@ kaelesh: [
 [65,67,11,8,15,21,7,5300479,6381502397,701965263,56157221,1776838211],
 [67,69,12,8,19,30,9,7091106,11678171877,1401380625,112110450,2825789807],
 [69,71,13,9,19,34,11,9478905,19145853807,2488960995,224006489,4543894426],
-[72,74,13,9,22,40,11,14628557,38294313546,4978260760,448043468,7271131512]
+[72,74,13,9,22,40,11,14628557,38294313546,4978330324,448043468,7271131512]
 ]
 };
-
-// ИСПРАВЛЕНО: добавлены 2005, 3005, 4005; все имена файлов без пробелов
 const LF_BUILDING_FILENAMES = {
-1001: 'residential_sector.png',
-1002: 'biosphere_farm.png',
-1003: 'research_center.png',
-1004: 'science_academy.png',
-1005: 'nerve_calibration_center.png',
-1006: 'high_energy_melting.png',
-1007: 'food_storage.png',
-1008: 'fusion_powered_production.png',
-1009: 'skyscraper.png',
-1010: 'biotech_lab.png',
-1011: 'metropolis.png',
-2001: 'meditation_enclave.png',
-2002: 'crystal_farm.png',
-2003: 'rune_technologium.png',
-2004: 'rune_forge.png',
-2005: 'orikterium.png',
-2006: 'magma_forge.png',
-2007: 'chamber_of_rupture.png',
-2008: 'megalith.png',
-2009: 'crystal_purification.png',
-2010: 'deuterium_synthesizer.png',
-2011: 'mineral_research_center.png',
-3001: 'assembly_line.png',
-3002: 'fusion_cell_factory.png',
-3003: 'robotics_research_center.png',
-3004: 'upgrade_network.png',
-3005: 'quantum_computer_center.png',
-3006: 'automated_assembly_center.png',
-3007: 'high_performance_transformer.png',
-3008: 'microchip_line.png',
-3009: 'production_assembly_workshop.png',
-3010: 'high_performance_synthesizer.png',
-3011: 'mass_chip_production.png',
-4001: 'sanctuary.png',
-4002: 'antimatter_condenser.png',
-4003: 'cyclone_chamber.png',
-4004: 'hall_of_realization.png',
-4005: 'transcendental_forum.png',
-4006: 'antimatter_converter.png',
-4007: 'cloning_lab.png',
-4008: 'chrysalis_accelerator.png',
-4009: 'biomodifier.png',
-4010: 'psionic_modulator.png',
-4011: 'ship_production_hall.png'
+1001:'residential_sector.png',1002:'biosphere_farm.png',1003:'research_center.png',
+1004:'science_academy.png',1005:'nerve_calibration_center.png',1006:'high_energy_melting.png',
+1007:'food_storage.png',1008:'fusion_powered_production.png',1009:'skyscraper.png',
+1010:'biotech_lab.png',1011:'metropolis.png',
+2001:'meditation_enclave.png',2002:'crystal_farm.png',2003:'rune_technologium.png',
+2004:'rune_forge.png',2005:'orikterium.png',2006:'magma_forge.png',
+2007:'chamber_of_rupture.png',2008:'megalith.png',2009:'crystal_purification.png',
+2010:'deuterium_synthesizer.png',2011:'mineral_research_center.png',
+3001:'assembly_line.png',3002:'fusion_cell_factory.png',3003:'robotics_research_center.png',
+3004:'upgrade_network.png',3005:'quantum_computer_center.png',3006:'automated_assembly_center.png',
+3007:'high_performance_transformer.png',3008:'microchip_line.png',
+3009:'production_assembly_workshop.png',3010:'high_performance_synthesizer.png',
+3011:'mass_chip_production.png',
+4001:'sanctuary.png',4002:'antimatter_condenser.png',4003:'cyclone_chamber.png',
+4004:'hall_of_realization.png',4005:'transcendental_forum.png',4006:'antimatter_converter.png',
+4007:'cloning_lab.png',4008:'chrysalis_accelerator.png',4009:'biomodifier.png',
+4010:'psionic_modulator.png',4011:'ship_production_hall.png'
 };
-
 let currentRace = 'humans';
 let initialized = false;
-
+let lastRenderKey = null;
+let firstRender = true;
 function safeGet(key, def) {
-    try {
-        const v = localStorage.getItem(key);
-        return v !== null ? v : def;
-    } catch (e) { return def; }
+try { const v = localStorage.getItem(key); return v !== null ? v : def; }
+catch (e) { return def; }
 }
 function safeSet(key, value) {
-    try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+try { localStorage.setItem(key, value); return true; }
+catch (e) { return false; }
 }
-
 const normalizeRace = (r) => (RACES.includes(r) ? r : 'humans');
 const getDict = () => (window.getLangDict ? window.getLangDict(safeGet(LANG_KEY, 'ru')) : {});
 const normalize = (v) => (window.normalizeLangText ? window.normalizeLangText(v) : String(v ?? '').trim());
 const fmt = (n) => Math.round(Number(n) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const raceOfPrefix = (p) => RACES.find((r) => RACE_PREFIX[r] === p) || 'humans';
-const buildingIcon = (id) => 'images/lifeforms/buildings/' + raceOfPrefix(Math.floor(id / 1000)) + '/' + (LF_BUILDING_FILENAMES[id] || id + '.png');
-
+const buildingIcon = (id) =>
+'images/lifeforms/buildings/' + raceOfPrefix(Math.floor(id / 1000)) + '/' +
+(LF_BUILDING_FILENAMES[id] || id + '.png');
 function icon(src, alt, size) {
-    return window.makeIcon ? window.makeIcon(src, alt, size) : document.createElement('span');
+return window.makeIcon ? window.makeIcon(src, alt, size) : document.createElement('span');
 }
 function td(text, cls) {
-    const c = document.createElement('td');
-    if (cls) c.className = cls;
-    c.textContent = text;
-    return c;
+const c = document.createElement('td');
+if (cls) c.className = cls;
+c.textContent = text;
+return c;
 }
 function tdTier(text, cls, tierLabel) {
-    const c = document.createElement('td');
-    if (cls) c.className = cls;
-    if (tierLabel) {
-        const b = document.createElement('span');
-        b.className = 'tier-badge';
-        b.textContent = tierLabel;
-        c.appendChild(b);
-    }
-    c.appendChild(document.createTextNode(text));
-    return c;
+const c = document.createElement('td');
+if (cls) c.className = cls;
+if (tierLabel) {
+const b = document.createElement('span');
+b.className = 'tier-badge';
+b.textContent = tierLabel;
+c.appendChild(b);
+}
+c.appendChild(document.createTextNode(text));
+return c;
 }
 function splitName(name) {
-    const parts = String(name).trim().split(' ');
-    if (parts.length === 1) return [name];
-    return [parts[0], parts.slice(1).join(' ')];
+const parts = String(name).trim().split(' ');
+if (parts.length === 1) return [name];
+return [parts[0], parts.slice(1).join(' ')];
 }
 function appendLines(th, text) {
-    splitName(text).forEach((line) => {
-        const s = document.createElement('span');
-        s.className = 'th-line';
-        s.textContent = line;
-        th.appendChild(s);
-    });
+splitName(text).forEach((line) => {
+const s = document.createElement('span');
+s.className = 'th-line';
+s.textContent = line;
+th.appendChild(s);
+});
 }
 function thText(text) {
-    const t = document.createElement('th');
-    appendLines(t, text);
-    return t;
+const t = document.createElement('th');
+appendLines(t, text);
+return t;
 }
 function thBuilding(text, iconPath) {
-    const t = document.createElement('th');
-    const img = icon(iconPath, text, 22);
-    img.style.display = 'block';
-    img.style.margin = '0 auto 4px';
-    img.style.width = '22px';
-    img.style.height = '22px';
-    img.style.objectFit = 'contain';
-    t.appendChild(img);
-    appendLines(t, text);
-    return t;
+const t = document.createElement('th');
+const img = icon(iconPath, text, 22);
+img.style.display = 'block';
+img.style.margin = '0 auto 4px';
+img.style.width = '22px';
+img.style.height = '22px';
+img.style.objectFit = 'contain';
+t.appendChild(img);
+appendLines(t, text);
+return t;
 }
-
 function buildTable(dict) {
-    const base = BASE_COLS[currentRace];
-    const extras = EXTRA_COLS[currentRace];
-    const table = document.createElement('table');
-    table.className = 'cost-table houses-table';
-    const thead = document.createElement('thead');
-    const htr = document.createElement('tr');
-    base.concat(extras).forEach((id) => {
-        htr.appendChild(thBuilding(normalize(dict['lf_b_' + id] || id), buildingIcon(id)));
-    });
-    htr.appendChild(thText(normalize(dict.housesTierPop1 || 'T1 Pop')));
-    htr.appendChild(thText(normalize(dict.housesTierPop2 || 'T2 Pop')));
-    htr.appendChild(thText(normalize(dict.housesTierPop3 || 'T3 Pop')));
-    thead.appendChild(htr);
-    table.appendChild(thead);
-    const tbody = document.createElement('tbody');
-    ROWS[currentRace].forEach((r, idx) => {
-        const tier = Math.floor(idx / TIER_SIZE);
-        const isTierStart = idx % TIER_SIZE === 0;
-        const tr = document.createElement('tr');
-        tr.className = 'houses-row t' + (tier + 1) + (isTierStart ? ' tier-start' : '');
-        r.slice(0, 4 + extras.length).forEach((v, i) => {
-            const label = (isTierStart && i === 0) ? 'T' + (tier + 1) : null;
-            tr.appendChild(tdTier(String(v), v > 0 ? 'houses-lv' : 'houses-zero', label));
-        });
-        r.slice(5 + extras.length, 8 + extras.length).forEach((v) => tr.appendChild(td(v > 0 ? fmt(v) : '', v > 0 ? 'houses-pop' : 'houses-empty')));
-        tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    return table;
+const base = BASE_COLS[currentRace];
+const extras = EXTRA_COLS[currentRace];
+const table = document.createElement('table');
+table.className = 'cost-table houses-table';
+const thead = document.createElement('thead');
+const htr = document.createElement('tr');
+base.concat(extras).forEach((id) => {
+htr.appendChild(thBuilding(normalize(dict['lf_b_' + id] || id), buildingIcon(id)));
+});
+htr.appendChild(thText(normalize(dict.housesTierPop1 || 'T1 Pop')));
+htr.appendChild(thText(normalize(dict.housesTierPop2 || 'T2 Pop')));
+htr.appendChild(thText(normalize(dict.housesTierPop3 || 'T3 Pop')));
+thead.appendChild(htr);
+table.appendChild(thead);
+const tbody = document.createElement('tbody');
+ROWS[currentRace].forEach((r, idx) => {
+const tier = Math.floor(idx / TIER_SIZE);
+const isTierStart = idx % TIER_SIZE === 0;
+const tr = document.createElement('tr');
+tr.className = 'houses-row t' + (tier + 1) + (isTierStart ? ' tier-start' : '');
+r.slice(0, 4 + extras.length).forEach((v, i) => {
+const label = (isTierStart && i === 0) ? 'T' + (tier + 1) : null;
+tr.appendChild(tdTier(String(v), v > 0 ? 'houses-lv' : 'houses-zero', label));
+});
+r.slice(5 + extras.length, 8 + extras.length).forEach((v) =>
+tr.appendChild(td(v > 0 ? fmt(v) : '', v > 0 ? 'houses-pop' : 'houses-empty'))
+);
+tbody.appendChild(tr);
+});
+table.appendChild(tbody);
+return table;
 }
-
 function render() {
-    const dict = getDict();
-    const select = document.getElementById('housesRaceSelect');
-    if (select) {
-        select.value = currentRace;
-        Array.from(select.options).forEach((o) => { o.textContent = normalize(dict[o.value] || o.value); });
-        select.setAttribute('aria-label', normalize(dict.lfSelectLabel || 'Lifeform'));
-    }
-    const content = document.getElementById('housesContent');
-    if (!content) return;
-    content.innerHTML = '';
-    content.appendChild(buildTable(dict));
+const dict = getDict();
+const lang = safeGet(LANG_KEY, 'ru');
+const renderKey = currentRace + '_' + lang;
+if (renderKey === lastRenderKey) return;
+lastRenderKey = renderKey;
+const select = document.getElementById('housesRaceSelect');
+if (select) {
+select.value = currentRace;
+Array.from(select.options).forEach((o) => {
+o.textContent = normalize(dict[o.value] || o.value);
+});
+select.setAttribute('aria-label', normalize(dict.lfSelectLabel || 'Lifeform'));
 }
-
+const content = document.getElementById('housesContent');
+if (!content) return;
+const panel = document.getElementById('houses-panel');
+if (panel) {
+if (firstRender) {
+panel.classList.remove('houses-no-anim');
+} else {
+panel.classList.add('houses-no-anim');
+}
+}
+content.innerHTML = '';
+content.appendChild(buildTable(dict));
+firstRender = false;
+}
 function initHousesUI() {
-    if (!initialized) {
-        initialized = true;
-        currentRace = normalizeRace(safeGet(RACE_KEY, 'humans'));
-        const panel = document.getElementById('houses-panel');
-        if (panel) panel.querySelectorAll('.settings-title').forEach((el) => el.remove());
-        const wrap = document.getElementById('housesRaceSwitch');
-        if (wrap) {
-            wrap.classList.add('houses-select-wrap');
-            if (!wrap.querySelector('select')) {
-                const select = document.createElement('select');
-                select.id = 'housesRaceSelect';
-                select.className = 'lifeform-select houses-race-select';
-                RACES.forEach((r) => {
-                    const opt = document.createElement('option');
-                    opt.value = r;
-                    select.appendChild(opt);
-                });
-                select.addEventListener('change', () => {
-                    currentRace = normalizeRace(select.value);
-                    safeSet(RACE_KEY, currentRace);
-                    render();
-                });
-                wrap.appendChild(select);
-            }
-        }
-    }
-    render();
+if (!initialized) {
+initialized = true;
+currentRace = normalizeRace(safeGet(RACE_KEY, 'humans'));
+const panel = document.getElementById('houses-panel');
+if (panel) panel.querySelectorAll('.settings-title').forEach((el) => el.remove());
+const wrap = document.getElementById('housesRaceSwitch');
+if (wrap) {
+wrap.classList.add('houses-select-wrap');
+if (!wrap.querySelector('select')) {
+const select = document.createElement('select');
+select.id = 'housesRaceSelect';
+select.className = 'lifeform-select houses-race-select';
+RACES.forEach((r) => {
+const opt = document.createElement('option');
+opt.value = r;
+select.appendChild(opt);
+});
+select.addEventListener('change', () => {
+currentRace = normalizeRace(select.value);
+safeSet(RACE_KEY, currentRace);
+lastRenderKey = null;
+render();
+});
+wrap.appendChild(select);
 }
-
+}
+}
+render();
+}
 window.initHousesUI = initHousesUI;
 window.updateHousesLang = () => {
-    const w = document.getElementById('housesWrapper');
-    if (w && w.style.display !== 'none') render();
+lastRenderKey = null;
+const w = document.getElementById('housesWrapper');
+if (w && w.style.display !== 'none') render();
 };
 })();
