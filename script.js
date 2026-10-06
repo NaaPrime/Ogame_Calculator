@@ -261,7 +261,7 @@ const LF_RESEARCH_FILENAMES = {
 2110: 'reinforced_diamond_drills.png', 2111: 'seismic_extraction_technology.png', 2112: 'magma_powered_supply_systems.png',
 2113: 'ionized_crystal_modules.png', 2114: 'optimized_mine_construction.png', 2115: 'diamond_energy_transmitter.png',
 2116: 'obsidian_shield_plating.png', 2117: 'rune_shields.png', 2118: 'rocktal_collector_enhancement.png',
-3101: 'catalyser_technology.png', 3102: 'plasma_drive.png', 3103: 'efficiency_module.png',
+3101: 'catalyst_technology.png', 3102: 'plasma_drive.png', 3103: 'efficiency_module.png',
 3104: 'warehouse_ai.png', 3105: 'general_repair_light_fighter.png', 3106: 'automated_transport_lines.png',
 3107: 'enhanced_drone_ai.png', 3108: 'experimental_recycling_technology.png', 3109: 'general_repair_cruiser.png',
 3110: 'gravitational_maneuver_autopilot.png', 3111: 'high_temperature_superconductors.png', 3112: 'general_repair_battleship.png',
@@ -703,17 +703,20 @@ nameSpan.className = 'ship-name';
 nameSpan.textContent = name;
 const chip = document.createElement('span');
 chip.className = 'disc-chip transport-capacity-chip';
-chip.textContent = formatNumberWithDots(transportCapacities[shipId]);
+chip.textContent = formatNumberWithDots(transportCapacities[shipId] || TRANSPORT_DEFAULTS[shipId] || 0);
 chip.title = normalizeLocalizedText(dict.transportCapacityLabel || 'Грузоподъёмность');
 tdName.append(icon, nameSpan, chip);
 const tdCount = document.createElement('td');
 tdCount.className = 'transport-count';
 tdCount.colSpan = 2;
-tdCount.textContent = '0';
+const countChip = document.createElement('span');
+countChip.className = 'transport-count-chip';
+countChip.textContent = '0';
+tdCount.appendChild(countChip);
 const tdEmpty = document.createElement('td');
 tdEmpty.colSpan = Math.max(1, cols - 3);
 tr.append(tdName, tdCount, tdEmpty);
-tr._transportRefs = { icon, chip, count: tdCount };
+tr._transportRefs = { icon, chip, count: countChip };
 const openEditor = (e) => {
 e.stopPropagation();
 openTransportCapacityEditor(tr, shipId);
@@ -730,9 +733,42 @@ document.querySelectorAll('.transport-needed-row[data-source="' + source + '"]')
 const totalSpan = $(totalSpanId);
 const totalRow = totalSpan ? totalSpan.closest('tr') : null;
 if (!totalRow || !totalRow.parentNode) return;
+const table = totalRow.closest('table');
+let actualCols = cols;
+if (table) {
+const headRow = table.tHead && table.tHead.rows[0];
+if (headRow) {
+actualCols = Array.from(headRow.cells).reduce((n, c) => n + (c.colSpan || 1), 0);
+}
+}
 const parent = totalRow.parentNode;
-parent.appendChild(createTransportNeededRow('large_cargo', dict, cols, source));
-parent.appendChild(createTransportNeededRow('small_cargo', dict, cols, source));
+parent.appendChild(createTransportNeededRow('large_cargo', dict, actualCols, source));
+parent.appendChild(createTransportNeededRow('small_cargo', dict, actualCols, source));
+decorateTotalMetalRow(totalRow);
+}
+function decorateTotalMetalRow(totalRow) {
+if (!totalRow || totalRow._sigmaAdded) return;
+const cell = Array.from(totalRow.cells).find((td) => td.querySelector('span[id^="sumTotal"]'));
+if (!cell) return;
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'sigma-toggle';
+btn.textContent = 'Σ';
+btn.title = normalizeLocalizedText(getDict().sumAllTabs || 'Сумма по всем вкладкам');
+btn.addEventListener('click', () => {
+const checkbox = $('sumAllTabsCheckbox');
+if (checkbox) {
+checkbox.checked = !checkbox.checked;
+checkbox.dispatchEvent(new Event('change'));
+} else {
+isSumAllTabsMode = !isSumAllTabsMode;
+safeSet(KEYS.SUM_ALL_TABS, String(isSumAllTabsMode));
+updateSumAllTabsRows();
+updateBoxesNeeded();
+}
+});
+cell.appendChild(btn);
+totalRow._sigmaAdded = true;
 }
 function openTransportCapacityEditor(tr, shipId) {
 if (!tr || tr._transportEditor) return;
@@ -771,7 +807,6 @@ const cleaned = sanitizeInput(input.value);
 const value = parseNumberInput(cleaned);
 transportCapacities[shipId] = value > 0 ? value : TRANSPORT_DEFAULTS[shipId];
 saveTransportCapacities();
-refs.chip.textContent = formatNumberWithDots(transportCapacities[shipId]);
 close();
 updateTransportNeededRows();
 };
@@ -818,11 +853,16 @@ document.querySelectorAll('.transport-needed-row').forEach((tr) => {
 const shipId = tr.dataset.transport;
 const refs = tr._transportRefs;
 if (!refs || !shipId) return;
-const capacity = transportCapacities[shipId] || 0;
+const capacity = transportCapacities[shipId] || TRANSPORT_DEFAULTS[shipId] || 0;
+if (refs.chip) {
+refs.chip.textContent = formatNumberWithDots(capacity);
+}
 const totalResources = getTransportSourceTotals(tr.dataset.source);
+if (refs.count) {
 refs.count.textContent = (capacity > 0 && totalResources > 0)
 ? formatNumberWithDots(Math.ceil(totalResources / capacity))
 : '0';
+}
 });
 }
 function buildRowsBuildings() {
@@ -1525,7 +1565,6 @@ $('planetBuildingsContent')?.classList.toggle('active', tab === 'planet');
 $('moonBuildingsContent')?.classList.toggle('active', tab === 'moon');
 (tab === 'moon' ? recalcAllMoonBuildings : recalcAllBuildings)();
 updateBoxesNeeded();
-updateTransportNeededRows();
 safeSet('og_calc_active_building_tab', tab);
 });
 });
@@ -1694,7 +1733,6 @@ document.querySelectorAll('.lf-subtab-btn').forEach((b) => b.classList.toggle('a
 $('lf-buildings')?.classList.toggle('active', target === 'lf-buildings');
 $('lf-research')?.classList.toggle('active', target === 'lf-research');
 if (!skipRecalc) (target === 'lf-research' ? recalcAllLfResearch : recalcAllLfBuildings)();
-updateTransportNeededRows();
 }
 function setActiveTab(tab, skipRecalc = false) {
 document.querySelectorAll('.tab-btn').forEach((b) => {
@@ -1721,8 +1759,10 @@ recalcAllBuildings();
 recalcAllResearch();
 }
 }
-if (!skipRecalc) updateBoxesNeeded();
+if (!skipRecalc) {
+updateBoxesNeeded();
 updateTransportNeededRows();
+}
 safeSet(KEYS.ACTIVE_TAB, tab);
 }
 function applyLang(lang, skipRebuild = false) {
@@ -1782,9 +1822,9 @@ if (typeof window.initHousesUI === 'function') window.initHousesUI();
 window.panZoomHouses?.applyTransform();
 } else {
 window.panZoomMain?.applyTransform();
+updateTransportNeededRows();
 }
 safeSet('og_calc_active_view', newView);
-updateTransportNeededRows();
 updateBackgroundVideo(newView);
 }
 function getSumAllTabsMetalValue() {
@@ -1827,6 +1867,7 @@ return cachedAggrRows;
 function updateSumAllTabsRows() {
 if (batchRecalc) return;
 const show = isSumAllTabsMode;
+document.querySelectorAll('.sigma-toggle').forEach((b) => b.classList.toggle('on', show));
 const rows = getAggrRows();
 rows.sumRows.forEach((r) => { r.style.display = show ? '' : 'none'; });
 rows.regularRows.forEach((r) => { r.style.display = show ? 'none' : ''; });
