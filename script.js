@@ -109,170 +109,110 @@ const SHIPS = [
 const SHIP_MAP = Object.fromEntries(SHIPS.map((s) => [s.id, s]));
 const TRANSPORT_DEFAULTS = { small_cargo: 5000, large_cargo: 25000 };
 const LF_TECH_COSTS = {
-1001: [7, 2, 0, 0, 40, 1.2, 1.2, 0, 0, 1.21],
-1002: [5, 2, 0, 8, 40, 1.23, 1.23, 0, 1.02, 1.25],
-1003: [20000, 25000, 10000, 10, 16000, 1.3, 1.3, 1.3, 1.08, 1.25],
-1004: [5000, 3200, 1500, 15, 16000, 1.7, 1.7, 1.7, 1.25, 1.6],
-1005: [50000, 40000, 50000, 30, 64000, 1.7, 1.7, 1.7, 1.25, 1.7],
-1006: [9000, 6000, 3000, 40, 2000, 1.5, 1.5, 1.5, 1.1, 1.3],
-1007: [25000, 13000, 7000, 0, 12000, 1.09, 1.09, 1.09, 0, 1.17],
-1008: [50000, 25000, 15000, 80, 28000, 1.5, 1.5, 1.5, 1.1, 1.2],
-1009: [75000, 20000, 25000, 50, 40000, 1.09, 1.09, 1.09, 1.02, 1.2],
-1010: [150000, 30000, 15000, 60, 52000, 1.12, 1.12, 1.12, 1.03, 1.2],
-1011: [80000, 35000, 60000, 90, 90000, 1.5, 1.5, 1.5, 1.05, 1.3],
-1012: [250000, 125000, 125000, 100, 95000, 1.15, 1.15, 1.15, 1.02, 1.2],
-1101: [5000, 2500, 500, 0, 1000, 1.3, 1.3, 1.3, 0, 1.2],
-1102: [7000, 10000, 5000, 0, 2000, 1.5, 1.5, 1.5, 0, 1.3],
-1103: [15000, 10000, 5000, 0, 2500, 1.3, 1.3, 1.3, 0, 1.3],
-1104: [20000, 15000, 7500, 0, 3500, 1.3, 1.3, 1.3, 0, 1.3],
-1105: [25000, 20000, 10000, 0, 4140, 1.3, 1.3, 1.3, 0, 1.2],
-1106: [35000, 25000, 15000, 0, 5000, 1.5, 1.5, 1.5, 0, 1.3],
-1107: [70000, 40000, 20000, 0, 8000, 1.3, 1.3, 1.3, 0, 1.3],
-1108: [80000, 50000, 20000, 0, 6000, 1.5, 1.5, 1.5, 0, 1.3],
-1109: [320000, 240000, 100000, 0, 6500, 1.5, 1.5, 1.5, 0, 1.4],
-1110: [320000, 240000, 100000, 0, 7000, 1.5, 1.5, 1.5, 0, 1.4],
-1111: [120000, 30000, 25000, 0, 7500, 1.5, 1.5, 1.5, 0, 1.3],
-1112: [100000, 40000, 30000, 0, 10000, 1.3, 1.3, 1.3, 0, 1.3],
-1113: [200000, 100000, 100000, 0, 8500, 1.3, 1.3, 1.3, 0, 1.3],
-1114: [160000, 120000, 50000, 0, 9000, 1.5, 1.5, 1.5, 0, 1.4],
-1115: [160000, 120000, 50000, 0, 9500, 1.5, 1.5, 1.5, 0, 1.4],
-1116: [320000, 240000, 100000, 0, 10000, 1.5, 1.5, 1.5, 0, 1.4],
-1117: [300000, 180000, 120000, 0, 11000, 1.5, 1.5, 1.5, 0, 1.3],
-1118: [500000, 300000, 200000, 0, 13000, 1.3, 1.3, 1.3, 0, 1.3],
-2001: [9, 3, 0, 0, 40, 1.2, 1.2, 0, 0, 1.21],
-2002: [7, 2, 0, 10, 40, 1.2, 1.2, 0, 1.03, 1.21],
-2003: [40000, 10000, 15000, 15, 16000, 1.3, 1.3, 1.3, 1.1, 1.25],
-2004: [5000, 3800, 1000, 20, 16000, 1.7, 1.7, 1.7, 1.35, 1.6],
-2005: [50000, 40000, 50000, 60, 64000, 1.65, 1.65, 1.65, 1.3, 1.7],
-2006: [10000, 8000, 1000, 40, 2000, 1.4, 1.4, 1.4, 1.1, 1.3],
-2007: [20000, 15000, 10000, 0, 16000, 1.2, 1.2, 1.2, 0, 1.25],
-2008: [50000, 35000, 15000, 80, 40000, 1.5, 1.5, 1.5, 1.3, 1.4],
-2009: [85000, 44000, 25000, 90, 40000, 1.4, 1.4, 1.4, 1.1, 1.2],
-2010: [120000, 50000, 20000, 90, 52000, 1.4, 1.4, 1.4, 1.1, 1.2],
-2011: [250000, 150000, 100000, 120, 90000, 1.8, 1.8, 1.8, 1.3, 1.3],
-2012: [250000, 125000, 125000, 100, 95000, 1.5, 1.5, 1.5, 1.1, 1.3],
-2101: [10000, 6000, 1000, 0, 1000, 1.5, 1.5, 1.5, 0, 1.3],
-2102: [7500, 12500, 5000, 0, 2000, 1.5, 1.5, 1.5, 0, 1.3],
-2103: [15000, 10000, 5000, 0, 2500, 1.5, 1.5, 1.5, 0, 1.3],
-2104: [20000, 15000, 7500, 0, 3500, 1.3, 1.3, 1.3, 0, 1.4],
-2105: [25000, 20000, 10000, 0, 4500, 1.5, 1.5, 1.5, 0, 1.3],
-2106: [50000, 50000, 20000, 0, 5000, 1.5, 1.5, 1.5, 0, 1.3],
-2107: [70000, 40000, 20000, 0, 5500, 1.5, 1.5, 1.5, 0, 1.3],
-2108: [160000, 120000, 50000, 0, 6000, 1.5, 1.5, 1.5, 0, 1.4],
-2109: [75000, 55000, 25000, 0, 6500, 1.5, 1.5, 1.5, 0, 1.3],
-2110: [85000, 40000, 35000, 0, 7000, 1.5, 1.5, 1.5, 0, 1.3],
-2111: [120000, 30000, 25000, 0, 7500, 1.5, 1.5, 1.5, 0, 1.3],
-2112: [100000, 40000, 30000, 0, 8000, 1.5, 1.5, 1.5, 0, 1.3],
-2113: [200000, 100000, 100000, 0, 8500, 1.2, 1.2, 1.2, 0, 1.3],
-2114: [220000, 110000, 110000, 0, 9000, 1.3, 1.3, 1.3, 0, 1.3],
-2115: [240000, 120000, 120000, 0, 9500, 1.3, 1.3, 1.3, 0, 1.3],
-2116: [250000, 250000, 250000, 0, 10000, 1.4, 1.4, 1.4, 0, 1.4],
-2117: [500000, 300000, 200000, 0, 13000, 1.5, 1.5, 1.5, 0, 1.3],
-2118: [300000, 180000, 120000, 0, 11000, 1.7, 1.7, 1.7, 0, 1.4],
-3001: [6, 2, 0, 0, 40, 1.21, 1.21, 0, 0, 1.22],
-3002: [5, 2, 0, 8, 48, 1.18, 1.18, 0, 1.02, 1.2],
-3003: [30000, 20000, 10000, 13, 16000, 1.3, 1.3, 1.3, 1.08, 1.25],
-3004: [5000, 3800, 1000, 10, 16000, 1.8, 1.8, 1.8, 1.2, 1.6],
-3005: [50000, 40000, 50000, 40, 64000, 1.8, 1.8, 1.8, 1.2, 1.7],
-3006: [7500, 7000, 1000, 0, 2000, 1.3, 1.3, 1.3, 0, 1.3],
-3007: [35000, 15000, 10000, 40, 16000, 1.5, 1.5, 1.5, 1.05, 1.4],
-3008: [50000, 20000, 30000, 40, 12000, 1.07, 1.07, 1.07, 1.01, 1.17],
-3009: [100000, 10000, 3000, 80, 40000, 1.14, 1.14, 1.14, 1.04, 1.3],
-3010: [100000, 40000, 20000, 60, 52000, 1.5, 1.5, 1.5, 1.1, 1.2],
-3011: [55000, 50000, 30000, 70, 50000, 1.5, 1.5, 1.5, 1.05, 1.3],
-3012: [250000, 125000, 125000, 100, 95000, 1.4, 1.4, 1.4, 1.05, 1.4],
-3101: [10000, 6000, 1000, 0, 1000, 1.5, 1.5, 1.5, 0, 1.3],
-3102: [7500, 12500, 5000, 0, 2000, 1.3, 1.3, 1.3, 0, 1.3],
-3103: [15000, 10000, 5000, 0, 2500, 1.5, 1.5, 1.5, 0, 1.4],
-3104: [20000, 15000, 7500, 0, 3500, 1.3, 1.3, 1.3, 0, 1.3],
-3105: [160000, 120000, 50000, 0, 4500, 1.5, 1.5, 1.5, 0, 1.4],
-3106: [50000, 50000, 20000, 0, 5000, 1.5, 1.5, 1.5, 0, 1.3],
-3107: [70000, 40000, 20000, 0, 5500, 1.3, 1.3, 1.3, 0, 1.3],
-3108: [160000, 120000, 50000, 0, 6000, 1.5, 1.5, 1.5, 0, 1.4],
-3109: [160000, 120000, 50000, 0, 6500, 1.5, 1.5, 1.5, 0, 1.4],
-3110: [85000, 40000, 35000, 0, 7000, 1.2, 1.2, 1.2, 0, 1.3],
-3111: [120000, 30000, 25000, 0, 7500, 1.3, 1.3, 1.3, 0, 1.3],
-3112: [160000, 120000, 50000, 0, 8000, 1.5, 1.5, 1.5, 0, 1.4],
-3113: [200000, 100000, 100000, 0, 8500, 1.5, 1.5, 1.5, 0, 1.3],
-3114: [160000, 120000, 50000, 0, 9000, 1.5, 1.5, 1.5, 0, 1.4],
-3115: [320000, 240000, 100000, 0, 9500, 1.5, 1.5, 1.5, 0, 1.4],
-3116: [320000, 240000, 100000, 0, 10000, 1.5, 1.5, 1.5, 0, 1.4],
-3117: [500000, 300000, 200000, 0, 13000, 1.5, 1.5, 1.5, 0, 1.3],
-3118: [300000, 180000, 120000, 0, 11000, 1.7, 1.7, 1.7, 0, 1.4],
-4001: [4, 3, 0, 0, 40, 1.21, 1.21, 0, 0, 1.22],
-4002: [6, 3, 0, 9, 40, 1.2, 1.2, 0, 1.02, 1.22],
-4003: [20000, 15000, 15000, 10, 16000, 1.3, 1.3, 1.3, 1.08, 1.25],
-4004: [7500, 5000, 800, 15, 16000, 1.8, 1.8, 1.8, 1.3, 1.7],
-4005: [60000, 30000, 50000, 30, 64000, 1.8, 1.8, 1.8, 1.3, 1.8],
-4006: [8500, 5000, 3000, 0, 2000, 1.25, 1.25, 1.25, 0, 1.35],
-4007: [15000, 15000, 5000, 0, 12000, 1.2, 1.2, 1.2, 0, 1.2],
-4008: [75000, 25000, 30000, 30, 16000, 1.05, 1.05, 1.05, 1.03, 1.18],
-4009: [87500, 25000, 30000, 40, 40000, 1.2, 1.2, 1.2, 1.02, 1.2],
-4010: [150000, 30000, 30000, 140, 52000, 1.4, 1.4, 1.4, 1.05, 1.8],
-4011: [75000, 50000, 55000, 90, 90000, 1.2, 1.2, 1.2, 1.04, 1.3],
-4012: [500000, 250000, 250000, 100, 95000, 1.4, 1.4, 1.4, 1.05, 1.3],
-4101: [10000, 6000, 1000, 0, 1000, 1.5, 1.5, 1.5, 0, 1.4],
-4102: [7500, 12500, 5000, 0, 2000, 1.5, 1.5, 1.5, 0, 1.3],
-4103: [15000, 10000, 5000, 0, 2500, 1.5, 1.5, 1.5, 0, 1.4],
-4104: [20000, 15000, 7500, 0, 3500, 1.5, 1.5, 1.5, 0, 1.4],
-4105: [25000, 20000, 10000, 0, 4500, 1.5, 1.5, 1.5, 0, 1.4],
-4106: [50000, 50000, 20000, 0, 5000, 1.3, 1.3, 1.3, 0, 1.4],
-4107: [70000, 40000, 20000, 0, 5500, 1.5, 1.5, 1.5, 0, 1.3],
-4108: [80000, 50000, 20000, 0, 6000, 1.2, 1.2, 1.2, 0, 1.2],
-4109: [320000, 240000, 100000, 0, 6500, 1.5, 1.5, 1.5, 0, 1.4],
-4110: [85000, 40000, 35000, 0, 7000, 1.2, 1.2, 1.2, 0, 1.2],
-4111: [120000, 30000, 25000, 0, 7500, 1.5, 1.5, 1.5, 0, 1.4],
-4112: [100000, 40000, 30000, 0, 8000, 1.5, 1.5, 1.5, 0, 1.3],
-4113: [200000, 100000, 100000, 0, 8500, 1.5, 1.5, 1.5, 0, 1.3],
-4114: [160000, 120000, 50000, 0, 9000, 1.5, 1.5, 1.5, 0, 1.4],
-4115: [240000, 120000, 120000, 0, 9500, 1.5, 1.5, 1.5, 0, 1.4],
-4116: [320000, 240000, 100000, 0, 10000, 1.5, 1.5, 1.5, 0, 1.4],
-4117: [500000, 300000, 200000, 0, 13000, 1.5, 1.5, 1.5, 0, 1.3],
-4118: [300000, 180000, 120000, 0, 11000, 1.7, 1.7, 1.7, 0, 1.4]
+1001:[7,2,0,0,40,1.2,1.2,0,0,1.21],1002:[5,2,0,8,40,1.23,1.23,0,1.02,1.25],
+1003:[20000,25000,10000,10,16000,1.3,1.3,1.3,1.08,1.25],1004:[5000,3200,1500,15,16000,1.7,1.7,1.7,1.25,1.6],
+1005:[50000,40000,50000,30,64000,1.7,1.7,1.7,1.25,1.7],1006:[9000,6000,3000,40,2000,1.5,1.5,1.5,1.1,1.3],
+1007:[25000,13000,7000,0,12000,1.09,1.09,1.09,0,1.17],1008:[50000,25000,15000,80,28000,1.5,1.5,1.5,1.1,1.2],
+1009:[75000,20000,25000,50,40000,1.09,1.09,1.09,1.02,1.2],1010:[150000,30000,15000,60,52000,1.12,1.12,1.12,1.03,1.2],
+1011:[80000,35000,60000,90,90000,1.5,1.5,1.5,1.05,1.3],1012:[250000,125000,125000,100,95000,1.15,1.15,1.15,1.02,1.2],
+1101:[5000,2500,500,0,1000,1.3,1.3,1.3,0,1.2],1102:[7000,10000,5000,0,2000,1.5,1.5,1.5,0,1.3],
+1103:[15000,10000,5000,0,2500,1.3,1.3,1.3,0,1.3],1104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
+1105:[25000,20000,10000,0,4140,1.3,1.3,1.3,0,1.2],1106:[35000,25000,15000,0,5000,1.5,1.5,1.5,0,1.3],
+1107:[70000,40000,20000,0,8000,1.3,1.3,1.3,0,1.3],1108:[80000,50000,20000,0,6000,1.5,1.5,1.5,0,1.3],
+1109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],1110:[320000,240000,100000,0,7000,1.5,1.5,1.5,0,1.4],
+1111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],1112:[100000,40000,30000,0,10000,1.3,1.3,1.3,0,1.3],
+1113:[200000,100000,100000,0,8500,1.3,1.3,1.3,0,1.3],1114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+1115:[160000,120000,50000,0,9500,1.5,1.5,1.5,0,1.4],1116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+1117:[300000,180000,120000,0,11000,1.5,1.5,1.5,0,1.3],1118:[500000,300000,200000,0,13000,1.3,1.3,1.3,0,1.3],
+2001:[9,3,0,0,40,1.2,1.2,0,0,1.21],2002:[7,2,0,10,40,1.2,1.2,0,1.03,1.21],
+2003:[40000,10000,15000,15,16000,1.3,1.3,1.3,1.1,1.25],2004:[5000,3800,1000,20,16000,1.7,1.7,1.7,1.35,1.6],
+2005:[50000,40000,50000,60,64000,1.65,1.65,1.65,1.3,1.7],2006:[10000,8000,1000,40,2000,1.4,1.4,1.4,1.1,1.3],
+2007:[20000,15000,10000,0,16000,1.2,1.2,1.2,0,1.25],2008:[50000,35000,15000,80,40000,1.5,1.5,1.5,1.3,1.4],
+2009:[85000,44000,25000,90,40000,1.4,1.4,1.4,1.1,1.2],2010:[120000,50000,20000,90,52000,1.4,1.4,1.4,1.1,1.2],
+2011:[250000,150000,100000,120,90000,1.8,1.8,1.8,1.3,1.3],2012:[250000,125000,125000,100,95000,1.5,1.5,1.5,1.1,1.3],
+2101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],2102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
+2103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.3],2104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.4],
+2105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.3],2106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
+2107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],2108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
+2109:[75000,55000,25000,0,6500,1.5,1.5,1.5,0,1.3],2110:[85000,40000,35000,0,7000,1.5,1.5,1.5,0,1.3],
+2111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],2112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
+2113:[200000,100000,100000,0,8500,1.2,1.2,1.2,0,1.3],2114:[220000,110000,110000,0,9000,1.3,1.3,1.3,0,1.3],
+2115:[240000,120000,120000,0,9500,1.3,1.3,1.3,0,1.3],2116:[250000,250000,250000,0,10000,1.4,1.4,1.4,0,1.4],
+2117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],2118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
+3001:[6,2,0,0,40,1.21,1.21,0,0,1.22],3002:[5,2,0,8,48,1.18,1.18,0,1.02,1.2],
+3003:[30000,20000,10000,13,16000,1.3,1.3,1.3,1.08,1.25],3004:[5000,3800,1000,10,16000,1.8,1.8,1.8,1.2,1.6],
+3005:[50000,40000,50000,40,64000,1.8,1.8,1.8,1.2,1.7],3006:[7500,7000,1000,0,2000,1.3,1.3,1.3,0,1.3],
+3007:[35000,15000,10000,40,16000,1.5,1.5,1.5,1.05,1.4],3008:[50000,20000,30000,40,12000,1.07,1.07,1.07,1.01,1.17],
+3009:[100000,10000,3000,80,40000,1.14,1.14,1.14,1.04,1.3],3010:[100000,40000,20000,60,52000,1.5,1.5,1.5,1.1,1.2],
+3011:[55000,50000,30000,70,50000,1.5,1.5,1.5,1.05,1.3],3012:[250000,125000,125000,100,95000,1.4,1.4,1.4,1.05,1.4],
+3101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],3102:[7500,12500,5000,0,2000,1.3,1.3,1.3,0,1.3],
+3103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],3104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
+3105:[160000,120000,50000,0,4500,1.5,1.5,1.5,0,1.4],3106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
+3107:[70000,40000,20000,0,5500,1.3,1.3,1.3,0,1.3],3108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
+3109:[160000,120000,50000,0,6500,1.5,1.5,1.5,0,1.4],3110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.3],
+3111:[120000,30000,25000,0,7500,1.3,1.3,1.3,0,1.3],3112:[160000,120000,50000,0,8000,1.5,1.5,1.5,0,1.4],
+3113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],3114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+3115:[320000,240000,100000,0,9500,1.5,1.5,1.5,0,1.4],3116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+3117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],3118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
+4001:[4,3,0,0,40,1.21,1.21,0,0,1.22],4002:[6,3,0,9,40,1.2,1.2,0,1.02,1.22],
+4003:[20000,15000,15000,10,16000,1.3,1.3,1.3,1.08,1.25],4004:[7500,5000,800,15,16000,1.8,1.8,1.8,1.3,1.7],
+4005:[60000,30000,50000,30,64000,1.8,1.8,1.8,1.3,1.8],4006:[8500,5000,3000,0,2000,1.25,1.25,1.25,0,1.35],
+4007:[15000,15000,5000,0,12000,1.2,1.2,1.2,0,1.2],4008:[75000,25000,30000,30,16000,1.05,1.05,1.05,1.03,1.18],
+4009:[87500,25000,30000,40,40000,1.2,1.2,1.2,1.02,1.2],4010:[150000,30000,30000,140,52000,1.4,1.4,1.4,1.05,1.8],
+4011:[75000,50000,55000,90,90000,1.2,1.2,1.2,1.04,1.3],4012:[500000,250000,250000,100,95000,1.4,1.4,1.4,1.05,1.3],
+4101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.4],4102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
+4103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],4104:[20000,15000,7500,0,3500,1.5,1.5,1.5,0,1.4],
+4105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.4],4106:[50000,50000,20000,0,5000,1.3,1.3,1.3,0,1.4],
+4107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],4108:[80000,50000,20000,0,6000,1.2,1.2,1.2,0,1.2],
+4109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],4110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.2],
+4111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.4],4112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
+4113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],4114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+4115:[240000,120000,120000,0,9500,1.5,1.5,1.5,0,1.4],4116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+4117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],4118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4]
 };
 const LF_BUILDING_FILENAMES = {
-1001: 'residential_sector.png', 1002: 'biosphere_farm.png', 1003: 'research_center.png',
-1004: 'science_academy.png', 1005: 'nerve_calibration_center.png', 1006: 'high_energy_melting.png',
-1007: 'food_storage.png', 1008: 'fusion_powered_production.png', 1009: 'skyscraper.png',
-1010: 'biotech_lab.png', 1011: 'metropolis.png', 1012: 'planetary_shield.png',
-2001: 'meditation_enclave.png', 2002: 'crystal_farm.png', 2003: 'rune_technologium.png',
-2004: 'rune_forge.png', 2005: 'orikterium.png', 2006: 'magma_forge.png',
-2007: 'chamber_of_rupture.png', 2008: 'megalith.png', 2009: 'crystal_purification.png',
-2010: 'deuterium_synthesizer.png', 2011: 'mineral_research_center.png', 2012: 'advanced_recycling_unit.png',
-3001: 'assembly_line.png', 3002: 'fusion_cell_factory.png', 3003: 'robotics_research_center.png',
-3004: 'upgrade_network.png', 3005: 'quantum_computer_center.png', 3006: 'automated_assembly_center.png',
-3007: 'high_performance_transformer.png', 3008: 'microchip_line.png', 3009: 'production_assembly_workshop.png',
-3010: 'high_performance_synthesizer.png', 3011: 'mass_chip_production.png', 3012: 'repair_nanobots.png',
-4001: 'sanctuary.png', 4002: 'antimatter_condenser.png', 4003: 'cyclone_chamber.png',
-4004: 'hall_of_realization.png', 4005: 'transcendental_forum.png', 4006: 'antimatter_converter.png',
-4007: 'cloning_lab.png', 4008: 'chrysalis_accelerator.png', 4009: 'biomodifier.png',
-4010: 'psionic_modulator.png', 4011: 'ship_production_hall.png', 4012: 'supra_refractor.png'
+1001:'residential_sector.png',1002:'biosphere_farm.png',1003:'research_center.png',
+1004:'science_academy.png',1005:'nerve_calibration_center.png',1006:'high_energy_melting.png',
+1007:'food_storage.png',1008:'fusion_powered_production.png',1009:'skyscraper.png',
+1010:'biotech_lab.png',1011:'metropolis.png',1012:'planetary_shield.png',
+2001:'meditation_enclave.png',2002:'crystal_farm.png',2003:'rune_technologium.png',
+2004:'rune_forge.png',2005:'orikterium.png',2006:'magma_forge.png',
+2007:'chamber_of_rupture.png',2008:'megalith.png',2009:'crystal_purification.png',
+2010:'deuterium_synthesizer.png',2011:'mineral_research_center.png',2012:'advanced_recycling_unit.png',
+3001:'assembly_line.png',3002:'fusion_cell_factory.png',3003:'robotics_research_center.png',
+3004:'upgrade_network.png',3005:'quantum_computer_center.png',3006:'automated_assembly_center.png',
+3007:'high_performance_transformer.png',3008:'microchip_line.png',3009:'production_assembly_workshop.png',
+3010:'high_performance_synthesizer.png',3011:'mass_chip_production.png',3012:'repair_nanobots.png',
+4001:'sanctuary.png',4002:'antimatter_condenser.png',4003:'cyclone_chamber.png',
+4004:'hall_of_realization.png',4005:'transcendental_forum.png',4006:'antimatter_converter.png',
+4007:'cloning_lab.png',4008:'chrysalis_accelerator.png',4009:'biomodifier.png',
+4010:'psionic_modulator.png',4011:'ship_production_hall.png',4012:'supra_refractor.png'
 };
 const LF_RESEARCH_FILENAMES = {
-1101: 'intergalactic_envoys.png', 1102: 'high_efficiency_extractors.png', 1103: 'fusion_drives.png',
-1104: 'stealth_field_generator.png', 1105: 'orbital_dock.png', 1106: 'research_ai.png',
-1107: 'high_performance_terraformer.png', 1108: 'enhanced_extraction_technologies.png', 1109: 'light_fighter_mk_ii.png',
-1110: 'cruiser_mk_ii.png', 1111: 'enhanced_laboratory_technology.png', 1112: 'plasma_terraformer.png',
-1113: 'low_temperature_drives.png', 1114: 'bomber_mk_ii.png', 1115: 'destroyer_mk_ii.png',
-1116: 'battlecruiser_mk_ii.png', 1117: 'assistant_robots.png', 1118: 'supercomputer.png',
-2101: 'volcanic_batteries.png', 2102: 'acoustic_scanning.png', 2103: 'high_energy_supply_systems.png',
-2104: 'cargo_hold_expansion.png', 2105: 'magma_powered_production.png', 2106: 'geothermal_power_plants.png',
-2107: 'echo_sounding.png', 2108: 'ion_crystal_enhancement.png', 2109: 'enhanced_stellarator.png',
-2110: 'reinforced_diamond_drills.png', 2111: 'seismic_extraction_technology.png', 2112: 'magma_powered_supply_systems.png',
-2113: 'ionized_crystal_modules.png', 2114: 'optimized_mine_construction.png', 2115: 'diamond_energy_transmitter.png',
-2116: 'obsidian_shield_plating.png', 2117: 'rune_shields.png', 2118: 'rocktal_collector_enhancement.png',
-3101: 'catalyst_technology.png', 3102: 'plasma_drive.png', 3103: 'efficiency_module.png',
-3104: 'warehouse_ai.png', 3105: 'general_repair_light_fighter.png', 3106: 'automated_transport_lines.png',
-3107: 'enhanced_drone_ai.png', 3108: 'experimental_recycling_technology.png', 3109: 'general_repair_cruiser.png',
-3110: 'gravitational_maneuver_autopilot.png', 3111: 'high_temperature_superconductors.png', 3112: 'general_repair_battleship.png',
-3113: 'swarm_ai.png', 3114: 'general_repair_battlecruiser.png', 3115: 'general_repair_bomber.png',
-3116: 'general_repair_destroyer.png', 3117: 'experimental_weapon_technology.png', 3118: 'mechas_overall_enhancement.png',
-4101: 'waste_heat_recovery.png', 4102: 'sulfide_process.png', 4103: 'psionic_network.png',
-4104: 'telekinetic_grab_beam.png', 4105: 'enhanced_sensor_technology.png', 4106: 'neuromodal_compressor.png',
-4107: 'neuro_interface.png', 4108: 'interplanetary_analytical_network.png', 4109: 'speed_boost_heavy_fighter.png',
-4110: 'telekinetic_drive.png', 4111: 'sixth_sense.png', 4112: 'psycho_harmonizer.png',
-4113: 'efficient_swarm_intelligence.png', 4114: 'speed_boost_large_cargo.png', 4115: 'gravitational_sensors.png',
-4116: 'speed_boost_battleship.png', 4117: 'psionic_shield_matrix.png', 4118: 'kaelesh_explorer_enhancement.png'
+1101:'intergalactic_envoys.png',1102:'high_efficiency_extractors.png',1103:'fusion_drives.png',
+1104:'stealth_field_generator.png',1105:'orbital_dock.png',1106:'research_ai.png',
+1107:'high_performance_terraformer.png',1108:'enhanced_extraction_technologies.png',1109:'light_fighter_mk_ii.png',
+1110:'cruiser_mk_ii.png',1111:'enhanced_laboratory_technology.png',1112:'plasma_terraformer.png',
+1113:'low_temperature_drives.png',1114:'bomber_mk_ii.png',1115:'destroyer_mk_ii.png',
+1116:'battlecruiser_mk_ii.png',1117:'assistant_robots.png',1118:'supercomputer.png',
+2101:'volcanic_batteries.png',2102:'acoustic_scanning.png',2103:'high_energy_supply_systems.png',
+2104:'cargo_hold_expansion.png',2105:'magma_powered_production.png',2106:'geothermal_power_plants.png',
+2107:'echo_sounding.png',2108:'ion_crystal_enhancement.png',2109:'enhanced_stellarator.png',
+2110:'reinforced_diamond_drills.png',2111:'seismic_extraction_technology.png',2112:'magma_powered_supply_systems.png',
+2113:'ionized_crystal_modules.png',2114:'optimized_mine_construction.png',2115:'diamond_energy_transmitter.png',
+2116:'obsidian_shield_plating.png',2117:'rune_shields.png',2118:'rocktal_collector_enhancement.png',
+3101:'catalyst_technology.png',3102:'plasma_drive.png',3103:'efficiency_module.png',
+3104:'warehouse_ai.png',3105:'general_repair_light_fighter.png',3106:'automated_transport_lines.png',
+3107:'enhanced_drone_ai.png',3108:'experimental_recycling_technology.png',3109:'general_repair_cruiser.png',
+3110:'gravitational_maneuver_autopilot.png',3111:'high_temperature_superconductors.png',3112:'general_repair_battleship.png',
+3113:'swarm_ai.png',3114:'general_repair_battlecruiser.png',3115:'general_repair_bomber.png',
+3116:'general_repair_destroyer.png',3117:'experimental_weapon_technology.png',3118:'mechas_overall_enhancement.png',
+4101:'waste_heat_recovery.png',4102:'sulfide_process.png',4103:'psionic_network.png',
+4104:'telekinetic_grab_beam.png',4105:'enhanced_sensor_technology.png',4106:'neuromodal_compressor.png',
+4107:'neuro_interface.png',4108:'interplanetary_analytical_network.png',4109:'speed_boost_heavy_fighter.png',
+4110:'telekinetic_drive.png',4111:'sixth_sense.png',4112:'psycho_harmonizer.png',
+4113:'efficient_swarm_intelligence.png',4114:'speed_boost_large_cargo.png',4115:'gravitational_sensors.png',
+4116:'speed_boost_battleship.png',4117:'psionic_shield_matrix.png',4118:'kaelesh_explorer_enhancement.png'
 };
 const RACES = ['humans', 'rocktal', 'mechas', 'kaelesh'];
 const RACE_PREFIX = { humans: '1', rocktal: '2', mechas: '3', kaelesh: '4' };
@@ -312,6 +252,7 @@ let cachedAggrRows = null;
 let isSumAllTabsMode = false;
 let currentLifeformRace = 'humans';
 let batchRecalc = false;
+let pendingGlobalUpdate = false;
 let inputsHandlersAttached = false;
 let currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let researchDiscounts = loadResearchDiscounts();
@@ -319,7 +260,6 @@ let transportCapacities = loadTransportCapacities();
 function $(id) {
 return document.getElementById(id);
 }
-function invalidateDomCache() {}
 function safeGet(key, def) {
 try {
 const v = localStorage.getItem(key);
@@ -495,19 +435,19 @@ if (img.parentNode) img.parentNode.insertBefore(fb, img.nextSibling);
 return img;
 }
 window.makeIcon = makeIcon;
-function updateResourceCell(td, value, cls) {
+function updateResourceCell(td, value) {
 if (!td) return;
 const formatted = formatNumberWithDots(value);
 if (td._lastValue === formatted) return;
 td._lastValue = formatted;
-let span = td.firstChild;
-if (!span || span.tagName !== 'SPAN') {
-td.innerHTML = '';
-span = document.createElement('span');
-span.className = cls;
-td.appendChild(span);
+if (!td._span) {
+td._span = td.querySelector('span');
+if (!td._span) {
+td._span = document.createElement('span');
+td.appendChild(td._span);
 }
-span.textContent = formatted;
+}
+td._span.textContent = formatted;
 }
 class LimitedCache {
 constructor(maxSize = 2000) {
@@ -716,7 +656,7 @@ tdCount.appendChild(countChip);
 const tdEmpty = document.createElement('td');
 tdEmpty.colSpan = Math.max(1, cols - 3);
 tr.append(tdName, tdCount, tdEmpty);
-tr._transportRefs = { icon, chip, count: countChip };
+tr._transportRefs = { icon, chip, count: countChip, nameSpan };
 const openEditor = (e) => {
 e.stopPropagation();
 openTransportCapacityEditor(tr, shipId);
@@ -783,7 +723,7 @@ const value = parseNumberInput(cleaned);
 transportCapacities[shipId] = value > 0 ? value : TRANSPORT_DEFAULTS[shipId];
 saveTransportCapacities();
 close();
-updateTransportNeededRows();
+scheduleGlobalUpdate();
 };
 input.addEventListener('input', () => {
 input.value = sanitizeInput(input.value);
@@ -824,7 +764,6 @@ else t = TOTALS[source] || emptyTotals();
 return addCapped(addCapped(t.m, t.c), t.d);
 }
 function updateTransportNeededRows() {
-if (batchRecalc) return;
 document.querySelectorAll('.transport-needed-row').forEach((tr) => {
 const shipId = tr.dataset.transport;
 const refs = tr._transportRefs;
@@ -839,6 +778,16 @@ refs.count.textContent = (capacity > 0 && totalResources > 0)
 ? formatNumberWithDots(Math.ceil(totalResources / capacity))
 : '0';
 }
+});
+}
+function scheduleGlobalUpdate() {
+if (batchRecalc || pendingGlobalUpdate) return;
+pendingGlobalUpdate = true;
+requestAnimationFrame(() => {
+pendingGlobalUpdate = false;
+updateBoxesNeeded();
+updateSumAllTabsRows();
+updateTransportNeededRows();
 });
 }
 function buildRowsBuildings() {
@@ -1017,6 +966,80 @@ tbody.replaceChildren(frag);
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalLfR', dict, 8, 'lfResearch');
 }
+function updateTableRowNames(tbodyId, namesArray) {
+const tbody = $(tbodyId);
+if (!tbody) return;
+tbody.querySelectorAll('tr[data-index]').forEach((tr) => {
+const idx = Number(tr.dataset.index);
+const refs = tr._refs;
+if (refs && refs.nameText && namesArray[idx] !== undefined) {
+refs.nameText.textContent = normalizeLocalizedText(namesArray[idx]);
+}
+});
+}
+function updateMoonTableNames() {
+const dict = getDict();
+const tbody = $('tbodyMoonBuildings');
+if (!tbody) return;
+tbody.querySelectorAll('tr[data-index]').forEach((tr) => {
+const idx = Number(tr.dataset.index);
+const refs = tr._refs;
+if (refs && refs.nameText && MOON_BUILDINGS[idx]) {
+const key = 'moon_' + MOON_BUILDINGS[idx].id;
+refs.nameText.textContent = normalizeLocalizedText(dict[key] || MOON_BUILDINGS[idx].name);
+}
+});
+}
+function updateFleetTableNames() {
+const dict = getDict();
+document.querySelectorAll('#shipsTable tbody tr[data-row-id]').forEach((tr) => {
+const shipId = tr.dataset.rowId;
+const refs = tr._refs;
+if (refs && refs.nameSpan && dict['ship_' + shipId]) {
+refs.nameSpan.textContent = normalizeLocalizedText(dict['ship_' + shipId]);
+}
+});
+}
+function updateLfTableNames(tbodyId, dictKey) {
+const tbody = $(tbodyId);
+if (!tbody) return;
+const dict = getDict();
+tbody.querySelectorAll('tr[data-tech-id]').forEach((tr) => {
+const techId = tr.dataset.techId;
+const refs = tr._refs;
+if (refs && refs.nameText && dict[dictKey + techId]) {
+refs.nameText.textContent = normalizeLocalizedText(dict[dictKey + techId]);
+}
+});
+}
+function updateTransportRowNames() {
+const dict = getDict();
+document.querySelectorAll('.transport-needed-row').forEach((tr) => {
+const refs = tr._transportRefs;
+const shipId = tr.dataset.transport;
+if (refs && refs.nameSpan && dict['ship_' + shipId]) {
+refs.nameSpan.textContent = normalizeLocalizedText(dict['ship_' + shipId]);
+}
+if (refs && refs.chip) {
+refs.chip.title = normalizeLocalizedText(dict.transportCapacityLabel || '');
+}
+});
+}
+function updateAllTableNamesOnly() {
+const buildingNames = window.getBuildingNames
+? window.getBuildingNames(currentLang())
+: ((typeof LANG_BUILDINGS !== 'undefined' && (LANG_BUILDINGS[currentLang()] || LANG_BUILDINGS.ru)) || []);
+const researchNames = window.getResearchNames
+? window.getResearchNames(currentLang())
+: ((typeof LANG_RESEARCH !== 'undefined' && (LANG_RESEARCH[currentLang()] || LANG_RESEARCH.ru)) || []);
+updateTableRowNames('tbodyBuildings', buildingNames);
+updateTableRowNames('tbodyResearch', researchNames);
+updateMoonTableNames();
+updateFleetTableNames();
+updateLfTableNames('tbodyLfBuildings', 'lf_b_');
+updateLfTableNames('tbodyLfResearch', 'lf_r_');
+updateTransportRowNames();
+}
 function recalcStandardTable(tbodyId, dataArray, sumIds, isMoon = false) {
 const tbody = $(tbodyId);
 if (!tbody) return;
@@ -1045,9 +1068,9 @@ c = Math.floor(c * k);
 d = Math.floor(d * k);
 }
 const p = clampCalc((m + c + d) / 1000);
-updateResourceCell(refs.m, m, 'val-metal');
-updateResourceCell(refs.c, c, 'val-crystal');
-updateResourceCell(refs.d, d, 'val-deut');
+updateResourceCell(refs.m, m);
+updateResourceCell(refs.c, c);
+updateResourceCell(refs.d, d);
 refs.p.textContent = formatNumberWithDots(p);
 tm = addCapped(tm, m);
 tc = addCapped(tc, c);
@@ -1056,15 +1079,14 @@ tp = addCapped(tp, p);
 });
 const totalMetal = clampCalc(convertToMetal(tm, tc, td));
 if (sumIds) {
-updateResourceCell($(sumIds.m), tm, 'val-metal');
-updateResourceCell($(sumIds.c), tc, 'val-crystal');
-updateResourceCell($(sumIds.d), td, 'val-deut');
+updateResourceCell($(sumIds.m), tm);
+updateResourceCell($(sumIds.c), tc);
+updateResourceCell($(sumIds.d), td);
 $(sumIds.p).textContent = formatNumberWithDots(tp);
 $(sumIds.total).textContent = formatNumberWithDots(totalMetal);
 }
 TOTALS[isMoon ? 'moonBuildings' : 'buildings'] = { m: tm, c: tc, d: td, p: tp, total: totalMetal };
-updateBoxesNeeded();
-updateSumAllTabsRows();
+scheduleGlobalUpdate();
 }
 function recalcLfTable(tbodyId, isBuilding) {
 const tbody = $(tbodyId);
@@ -1083,9 +1105,9 @@ const refs = tr._refs;
 if (!refs) return;
 const techId = Number(tr.dataset.techId) || 0;
 if (!techId || !LF_TECH_COSTS[techId]) {
-updateResourceCell(refs.m, 0, 'val-metal');
-updateResourceCell(refs.c, 0, 'val-crystal');
-updateResourceCell(refs.d, 0, 'val-deut');
+updateResourceCell(refs.m, 0);
+updateResourceCell(refs.c, 0);
+updateResourceCell(refs.d, 0);
 refs.p.textContent = '0';
 return;
 }
@@ -1113,9 +1135,9 @@ const m = clampCalc(cost[0] * planets);
 const c = clampCalc(cost[1] * planets);
 const d = clampCalc(cost[2] * planets);
 const p = clampCalc(points * planets);
-updateResourceCell(refs.m, m, 'val-metal');
-updateResourceCell(refs.c, c, 'val-crystal');
-updateResourceCell(refs.d, d, 'val-deut');
+updateResourceCell(refs.m, m);
+updateResourceCell(refs.c, c);
+updateResourceCell(refs.d, d);
 refs.p.textContent = formatNumberWithDots(p);
 tm = addCapped(tm, m);
 tc = addCapped(tc, c);
@@ -1124,15 +1146,14 @@ tp = addCapped(tp, p);
 });
 const suf = isBuilding ? 'LfB' : 'LfR';
 const totalMetal = clampCalc(convertToMetal(tm, tc, td));
-updateResourceCell($('sumMetal' + suf), tm, 'val-metal');
-updateResourceCell($('sumCrystal' + suf), tc, 'val-crystal');
-updateResourceCell($('sumDeut' + suf), td, 'val-deut');
+updateResourceCell($('sumMetal' + suf), tm);
+updateResourceCell($('sumCrystal' + suf), tc);
+updateResourceCell($('sumDeut' + suf), td);
 $('sumPoints' + suf).textContent = formatNumberWithDots(tp);
 $('sumTotalMetal' + suf).textContent = formatNumberWithDots(totalMetal);
 lfTotals[currentLifeformRace][isBuilding ? 'buildings' : 'research'] = { m: tm, c: tc, d: td, p: tp, total: totalMetal };
 saveLfTotals();
-updateBoxesNeeded();
-updateSumAllTabsRows();
+scheduleGlobalUpdate();
 }
 const recalcAllBuildings = () => recalcStandardTable('tbodyBuildings', BUILDINGS, {
 m: 'sumMetalB', c: 'sumCrystalB', d: 'sumDeutB', p: 'sumPointsB', total: 'sumTotalMetalB'
@@ -1162,9 +1183,9 @@ const m = k > 0 ? Math.floor(sum.m * (1 - k)) : sum.m;
 const c = k > 0 ? Math.floor(sum.c * (1 - k)) : sum.c;
 const d = k > 0 ? Math.floor(sum.d * (1 - k)) : sum.d;
 const p = k > 0 ? Math.floor((m + c + d) / 1000) : sum.points;
-updateResourceCell(refs.m, m, 'val-metal');
-updateResourceCell(refs.c, c, 'val-crystal');
-updateResourceCell(refs.d, d, 'val-deut');
+updateResourceCell(refs.m, m);
+updateResourceCell(refs.c, c);
+updateResourceCell(refs.d, d);
 refs.p.textContent = formatNumberWithDots(p);
 if (refs.chip) {
 const hint = refs.chip.dataset.hint || '';
@@ -1179,9 +1200,9 @@ sp = addCapped(sp, p);
 totalLevels += sum.levels;
 });
 const totalMetal = clampCalc(convertToMetal(sm, sc, sd));
-updateResourceCell($('sumMetalR'), sm, 'val-metal');
-updateResourceCell($('sumCrystalR'), sc, 'val-crystal');
-updateResourceCell($('sumDeutR'), sd, 'val-deut');
+updateResourceCell($('sumMetalR'), sm);
+updateResourceCell($('sumCrystalR'), sc);
+updateResourceCell($('sumDeutR'), sd);
 $('sumPointsR').textContent = formatNumberWithDots(sp);
 $('sumTotalMetalR').textContent = formatNumberWithDots(totalMetal);
 TOTALS.research = { m: sm, c: sc, d: sd, p: sp, total: totalMetal };
@@ -1189,8 +1210,7 @@ const perLevel = parseInputValue($('tmInput'));
 const totalTM = clampCalc(perLevel * totalLevels * CONFIG.TM_PER_LEVEL_FACTOR);
 const dict = getDict();
 $('tmTotal').textContent = `${normalizeLocalizedText(dict.totalTMLabel || 'Итого:')} ${formatNumberWithDots(totalTM)}`;
-updateBoxesNeeded();
-updateSumAllTabsRows();
+scheduleGlobalUpdate();
 }
 function recalcAll() {
 batchRecalc = true;
@@ -1201,9 +1221,7 @@ recalcAllLfBuildings();
 recalcAllLfResearch();
 computeFleet();
 batchRecalc = false;
-updateBoxesNeeded();
-updateSumAllTabsRows();
-updateTransportNeededRows();
+scheduleGlobalUpdate();
 }
 function renderTable() {
 const tableBody = document.querySelector('#shipsTable tbody');
@@ -1243,6 +1261,7 @@ tdP.className = 'p';
 tdP.textContent = '0';
 refs.qty = qtyInput;
 refs.p = tdP;
+refs.nameSpan = nameSpan;
 row._refs = refs;
 fleetInputs.push(qtyInput);
 row.append(tdName, tdQty, tdM, tdC, tdD, tdP);
@@ -1300,7 +1319,6 @@ frag.appendChild(trSumAllTotal);
 tableBody.replaceChildren(frag);
 fleetTableBuilt = true;
 cachedAggrRows = null;
-invalidateDomCache();
 insertTransportRowsAfterTotal('sumTotalMetalF', dict, 6, 'fleet');
 attachLiveThousandsFormatting('input[data-id]');
 if (!tableBody.dataset.fleetInputBound) {
@@ -1341,15 +1359,14 @@ if (refs) refs.p.textContent = formatNumberWithDots(pts);
 fp = addCapped(fp, pts);
 });
 const totalMetal = clampCalc(convertToMetal(fm, fc, fd));
-updateResourceCell($('sumMetalF'), fm, 'val-metal');
-updateResourceCell($('sumCrystalF'), fc, 'val-crystal');
-updateResourceCell($('sumDeutF'), fd, 'val-deut');
+updateResourceCell($('sumMetalF'), fm);
+updateResourceCell($('sumCrystalF'), fc);
+updateResourceCell($('sumDeutF'), fd);
 if (fleetSummaryCells.sumP) fleetSummaryCells.sumP.textContent = formatNumberWithDots(fp);
 const totalSpan = $('sumTotalMetalF');
 if (totalSpan) totalSpan.textContent = formatNumberWithDots(totalMetal);
 TOTALS.fleet = { m: fm, c: fc, d: fd, p: fp, total: totalMetal };
-updateBoxesNeeded();
-updateSumAllTabsRows();
+scheduleGlobalUpdate();
 }
 function saveShipQuantities() {
 const qtyMap = {};
@@ -1448,7 +1465,7 @@ recalcAllLfBuildings();
 } else if (id === 'mrcLevel') {
 recalcAllBuildings();
 }
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 safeSet(`og_calc_${id}`, String(parseInputValue(el)));
 }, 150);
 el.addEventListener('input', handler);
@@ -1499,7 +1516,7 @@ const boxEl = $('boxValue');
 if (boxEl) {
 const onBoxChange = debounce(() => {
 safeSet(KEYS.BOXES, JSON.stringify({ boxValue: parseInputValue(boxEl) }));
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 }, 150);
 boxEl.addEventListener('input', onBoxChange);
 boxEl.addEventListener('change', onBoxChange);
@@ -1515,6 +1532,7 @@ persistLfInputs();
 saveLfTotals();
 currentLifeformRace = normalizeRace(e.target.value);
 safeSet(KEYS.LF_RACE, currentLifeformRace);
+calcCache.clear();
 updateLfBonusesVisibility(currentLifeformRace);
 buildRowsLfBuildings();
 buildRowsLfResearch();
@@ -1523,7 +1541,7 @@ restoreInputRowsFromSelector('#tbodyLfResearch tr', `${KEYS.LF_INPUTS_RESEARCH}_
 attachLiveThousandsFormatting('#tbodyLfBuildings input,#tbodyLfResearch input');
 recalcAllLfBuildings();
 recalcAllLfResearch();
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 });
 }
 document.querySelectorAll('#tabsLeft .tab-btn').forEach((btn) => {
@@ -1541,7 +1559,7 @@ btn.classList.add('active');
 $('planetBuildingsContent')?.classList.toggle('active', tab === 'planet');
 $('moonBuildingsContent')?.classList.toggle('active', tab === 'moon');
 (tab === 'moon' ? recalcAllMoonBuildings : recalcAllBuildings)();
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 safeSet('og_calc_active_building_tab', tab);
 });
 });
@@ -1737,8 +1755,7 @@ recalcAllResearch();
 }
 }
 if (!skipRecalc) {
-updateBoxesNeeded();
-updateTransportNeededRows();
+scheduleGlobalUpdate();
 }
 safeSet(KEYS.ACTIVE_TAB, tab);
 }
@@ -1746,13 +1763,14 @@ function applyLang(lang, skipRebuild = false) {
 if (!lang || !LANGUAGES[lang]) return;
 if (currentLang() === lang && !skipRebuild) return;
 safeSet(KEYS.LANG, lang);
-if (!skipRebuild) saveAllInputsBeforeSwitch();
 const dict = getDict();
 document.documentElement.lang = dict.locale || lang;
 applyI18nAttributes();
 auditI18nKeys();
 document.querySelectorAll('.nav-btn[data-view]').forEach((btn) => {
-const key = btn.dataset.view === 'costs' ? 'tabBuildings' : btn.dataset.view === 'expeditions' ? 'tabExpeditions' : btn.dataset.view === 'houses' ? 'tabHouses' : '';
+const key = btn.dataset.view === 'costs' ? 'tabBuildings'
+: btn.dataset.view === 'expeditions' ? 'tabExpeditions'
+: btn.dataset.view === 'houses' ? 'tabHouses' : '';
 if (key && dict[key]) btn.textContent = normalizeLocalizedText(dict[key]);
 });
 const lfSelect = $('lifeformSelect');
@@ -1764,22 +1782,10 @@ if (dict.lfSelectLabel) lfSelect.setAttribute('aria-label', normalizeLocalizedTe
 }
 setLangLabel(lang);
 if (skipRebuild) return;
-const activeTab = getActiveTab();
-const activeLfSubtab = document.querySelector('.lf-subtab-btn.active')?.dataset.subtab || 'lf-buildings';
-fleetTableBuilt = false;
 calcCache.clear();
-buildRowsBuildings();
-buildRowsResearch();
-buildRowsMoonBuildings();
-renderTable();
-buildRowsLfBuildings();
-buildRowsLfResearch();
-restoreAllInputsAfterSwitch();
+updateAllTableNamesOnly();
 updateLfBonusesVisibility(currentLifeformRace);
-attachLiveThousandsFormatting('#boxValue,input[data-id],#tbodyLfBuildings input,#tbodyLfResearch input');
-setActiveTab(activeTab, true);
-activateLfSubtab(activeLfSubtab, true);
-recalcAll();
+scheduleGlobalUpdate();
 if (typeof window.updateExpeditionsLang === 'function') window.updateExpeditionsLang();
 if (typeof window.updateHousesLang === 'function') window.updateHousesLang();
 }
@@ -1847,7 +1853,6 @@ const show = isSumAllTabsMode;
 const rows = getAggrRows();
 rows.sumRows.forEach((r) => { r.style.display = show ? '' : 'none'; });
 rows.regularRows.forEach((r) => { r.style.display = show ? 'none' : ''; });
-updateTransportNeededRows();
 if (!show) return;
 const totals = { m: 0, c: 0, d: 0, p: 0 };
 [TOTALS.buildings, TOTALS.moonBuildings, TOTALS.research, TOTALS.fleet].forEach((t) => {
@@ -1934,7 +1939,6 @@ BONUS_INPUT_IDS.forEach((id) => {
 const el = $(id);
 if (el && el.value !== '') current[id] = sanitizeInput(el.value);
 });
-invalidateDomCache();
 const fields = {
 rocktal: [['lfMegalith', 'megalithLevel'], ['lfMineralCenter', 'mrcLevel'], ['lfRunoTech', 'runoLevel']],
 humans: [['lf_b_1003', 'humansLevel']],
@@ -2151,6 +2155,7 @@ document.querySelectorAll(`${sel} input[data-type="planets"],${sel} input[data-t
 });
 RACES.forEach((race) => {
 currentLifeformRace = race;
+calcCache.clear();
 buildRowsLfBuildings();
 buildRowsLfResearch();
 document.querySelectorAll('#tbodyLfBuildings input[data-type="from"],#tbodyLfBuildings input[data-type="to"],#tbodyLfResearch input[data-type="from"],#tbodyLfResearch input[data-type="to"]').forEach((inp) => { inp.value = ''; });
@@ -2195,8 +2200,7 @@ if (currencyValue) currencyValue.textContent = '0';
 if (typeof window.clearFleet === 'function') window.clearFleet();
 if (typeof window.updateExpeditionsLang === 'function') window.updateExpeditionsLang();
 if (typeof window.updateHousesLang === 'function') window.updateHousesLang();
-updateSumAllTabsRows();
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 saveLfTotals();
 switchView('costs');
 setActiveTab('buildings');
@@ -2294,7 +2298,7 @@ readSettingsFromInputs();
 saveSettings();
 applySettingsToConfig();
 updateBoxesCostTL();
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 closeSettingsModal();
 }
 function resetSettingsToDefaults() {
@@ -2369,8 +2373,7 @@ if (sumAllTabsCheckbox) {
 sumAllTabsCheckbox.addEventListener('change', function () {
 isSumAllTabsMode = this.checked;
 safeSet(KEYS.SUM_ALL_TABS, String(isSumAllTabsMode));
-updateSumAllTabsRows();
-updateBoxesNeeded();
+scheduleGlobalUpdate();
 });
 }
 const savedView = safeGet('og_calc_active_view', 'costs');
