@@ -57,7 +57,7 @@ const BUILDINGS = [
 { id: 9, img: 'metal_storage.png', base: { m: 1000, c: 0, d: 0 }, factor: 2.0 },
 { id: 10, img: 'crystal_storage.png', base: { m: 1000, c: 500, d: 0 }, factor: 2.0 },
 { id: 11, img: 'deuterium_tank.png', base: { m: 1000, c: 1000, d: 0 }, factor: 2.0 },
-{ id: 17, img: 'anomaly_scanner.png', base: { m: 84, c: 42, d: 14 }, factor: 1.4 },
+{ id: 17, img: 'anomaly_scanner.png', base: { m: 84, c: 42, d: 14 }, factor: 1.5 },
 { id: 12, img: 'research_lab.png', base: { m: 200, c: 400, d: 200 }, factor: 2.0 },
 { id: 13, img: 'terraformer.png', base: { m: 0, c: 50000, d: 100000 }, factor: 2.0 },
 { id: 14, img: 'alliance_depot.png', base: { m: 20000, c: 40000, d: 0 }, factor: 2.0 },
