@@ -1,6 +1,5 @@
 (function () {
 'use strict';
-
 const CONFIG = {
   TM_PER_BOX: 42000,
   TM_PACKS: [{ tm: 12500000, priceTRY: 900 }],
@@ -13,9 +12,7 @@ const CONFIG = {
   TM_PER_LEVEL_FACTOR: 2,
   TM_INPUT_PLACEHOLDER: '72810'
 };
-
 const CURRENCY_SYMBOLS = { BYN: 'Br', RUB: '₽', USD: '$', EUR: '€', TRY: '₺' };
-
 const KEYS = {
   LANG: 'og_calc_lang_v2',
   TRANSFORM: 'og_calc_transform_v2',
@@ -36,23 +33,19 @@ const KEYS = {
   RESEARCH_DISCOUNTS: 'og_calc_research_discounts_v1',
   TRANSPORT_CAPACITY: 'og_calc_transport_capacity_v1'
 };
-
 const SETTINGS_KEY = 'og_calc_settings_v1';
 const PERF_KEY = 'og_calc_perf_mode_v1';
-
 const IMG = {
   root: 'images/',
   buildings: 'images/buildings/',
   research: 'images/research/',
   ships: 'images/ships/'
 };
-
 const LANGUAGES = {
   en: 'English', ru: 'Русский', de: 'Deutsch', pl: 'Polski', es: 'Español',
   fr: 'Français', it: 'Italiano', nl: 'Nederlands', sk: 'Slovenčina',
   tr: 'Türkçe', pt: 'Português', bs: 'Bosanski'
 };
-
 const BUILDINGS = [
   { id: 1, img: 'metal_mine.png', base: { m: 60, c: 15, d: 0 }, factor: 1.5 },
   { id: 2, img: 'crystal_mine.png', base: { m: 48, c: 24, d: 0 }, factor: 1.6 },
@@ -72,10 +65,8 @@ const BUILDINGS = [
   { id: 15, img: 'dock.png', base: { m: 200, c: 0, d: 50 }, factor: 5.0 },
   { id: 16, img: 'missile_silo.png', base: { m: 20000, c: 20000, d: 1000 }, factor: 2.0 }
 ];
-
 const BUILDING_ORDER = [0, 1, 2, 3, 4, 8, 9, 10, 11, 5, 7, 12, 6, 13, 14, 15, 16];
 const MRC_BUILDING_IDS = new Set([1, 2, 3]);
-
 const MOON_BUILDINGS = [
   { id: 44, name: 'Фабрика роботов', img: 'robot_factory.png', base: { m: 400, c: 120, d: 200 }, factor: 2.0 },
   { id: 45, name: 'Верфь', img: 'shipyard.png', base: { m: 400000, c: 200000, d: 100000 }, factor: 2.0 },
@@ -83,7 +74,6 @@ const MOON_BUILDINGS = [
   { id: 42, name: 'Сенсорная фаланга', img: 'sensor_phalanx.png', base: { m: 20000, c: 40000, d: 20000 }, factor: 2.0 },
   { id: 43, name: 'Ворота', img: 'jump_gate.png', base: { m: 2000000, c: 4000000, d: 2000000 }, factor: 2.0 }
 ];
-
 const RESEARCH = [
   { img: 'spy.png', base: { m: 200, c: 1000, d: 200 }, factor: 2.0 },
   { img: 'computer.png', base: { m: 0, c: 400, d: 600 }, factor: 2.0 },
@@ -102,7 +92,6 @@ const RESEARCH = [
   { img: 'astro.png', base: { m: 4000, c: 8000, d: 4000 }, factor: 1.75 },
   { img: 'graviton.png', base: { m: 0, c: 0, d: 0 }, factor: 3.0 }
 ];
-
 const SHIPS = [
   { id: 'small_cargo', metal: 2000, crystal: 2000, deut: 0, img: 'maly_transport.png' },
   { id: 'large_cargo', metal: 6000, crystal: 6000, deut: 0, img: 'bolshoy_transport.png' },
@@ -118,150 +107,138 @@ const SHIPS = [
   { id: 'reaper', metal: 85000, crystal: 55000, deut: 20000, img: 'reaper.png' },
   { id: 'pathfinder', metal: 8000, crystal: 15000, deut: 8000, img: 'pathfinder.png' }
 ];
-
 const SHIP_MAP = Object.fromEntries(SHIPS.map((s) => [s.id, s]));
-
 const TRANSPORT_DEFAULTS = { small_cargo: 5000, large_cargo: 25000 };
-
 const LF_TECH_COSTS = {
-1001:[7,2,0,0,40,1.2,1.2,0,0,1.21],1002:[5,2,0,8,40,1.23,1.23,0,1.02,1.25],
-1003:[20000,25000,10000,10,16000,1.3,1.3,1.3,1.08,1.25],1004:[5000,3200,1500,15,16000,1.7,1.7,1.7,1.25,1.6],
-1005:[50000,40000,50000,30,64000,1.7,1.7,1.7,1.25,1.7],1006:[9000,6000,3000,40,2000,1.5,1.5,1.5,1.1,1.3],
-1007:[25000,13000,7000,0,12000,1.09,1.09,1.09,0,1.17],1008:[50000,25000,15000,80,28000,1.5,1.5,1.5,1.1,1.2],
-1009:[75000,20000,25000,50,40000,1.09,1.09,1.09,1.02,1.2],1010:[150000,30000,15000,60,52000,1.12,1.12,1.12,1.03,1.2],
-1011:[80000,35000,60000,90,90000,1.5,1.5,1.5,1.05,1.3],1012:[250000,125000,125000,100,95000,1.15,1.15,1.15,1.02,1.2],
-1101:[5000,2500,500,0,1000,1.3,1.3,1.3,0,1.2],1102:[7000,10000,5000,0,2000,1.5,1.5,1.5,0,1.3],
-1103:[15000,10000,5000,0,2500,1.3,1.3,1.3,0,1.3],1104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
-1105:[25000,20000,10000,0,4140,1.3,1.3,1.3,0,1.2],1106:[35000,25000,15000,0,5000,1.5,1.5,1.5,0,1.3],
-1107:[70000,40000,20000,0,8000,1.3,1.3,1.3,0,1.3],1108:[80000,50000,20000,0,6000,1.5,1.5,1.5,0,1.3],
-1109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],1110:[320000,240000,100000,0,7000,1.5,1.5,1.5,0,1.4],
-1111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],1112:[100000,40000,30000,0,10000,1.3,1.3,1.3,0,1.3],
-1113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],1114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
-1115:[160000,120000,50000,0,9500,1.5,1.5,1.5,0,1.4],1116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
-1117:[300000,180000,120000,0,11000,1.5,1.5,1.5,0,1.3],1118:[500000,300000,200000,0,13000,1.3,1.3,1.3,0,1.3],
-2001:[9,3,0,0,40,1.2,1.2,0,0,1.21],2002:[7,2,0,10,40,1.2,1.2,0,1.03,1.21],
-2003:[40000,10000,15000,15,16000,1.3,1.3,1.3,1.1,1.25],2004:[5000,3800,1000,20,16000,1.7,1.7,1.7,1.35,1.6],
-2005:[50000,40000,50000,60,64000,1.65,1.65,1.65,1.3,1.7],2006:[10000,8000,1000,40,2000,1.4,1.4,1.4,1.1,1.3],
-2007:[20000,15000,10000,0,16000,1.2,1.2,1.2,0,1.25],2008:[50000,35000,15000,80,40000,1.5,1.5,1.5,1.3,1.4],
-2009:[85000,44000,25000,90,40000,1.4,1.4,1.4,1.1,1.2],2010:[120000,50000,20000,90,52000,1.4,1.4,1.4,1.1,1.2],
-2011:[250000,150000,100000,120,90000,1.8,1.8,1.8,1.3,1.3],2012:[250000,125000,125000,100,95000,1.5,1.5,1.5,1.1,1.3],
-2101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],2102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
-2103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.3],2104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.4],
-2105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.3],2106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
-2107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],2108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
-2109:[75000,55000,25000,0,6500,1.5,1.5,1.5,0,1.3],2110:[85000,40000,35000,0,7000,1.5,1.5,1.5,0,1.3],
-2111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],2112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
-2113:[200000,100000,100000,0,8500,1.2,1.2,1.2,0,1.3],2114:[220000,110000,110000,0,9000,1.3,1.3,1.3,0,1.3],
-2115:[240000,120000,120000,0,9500,1.3,1.3,1.3,0,1.3],2116:[250000,250000,250000,0,10000,1.4,1.4,1.4,0,1.4],
-2117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],2118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
-3001:[6,2,0,0,40,1.21,1.21,0,0,1.22],3002:[5,2,0,8,48,1.18,1.18,0,1.02,1.2],
-3003:[30000,20000,10000,13,16000,1.3,1.3,1.3,1.08,1.25],3004:[5000,3800,1000,10,16000,1.8,1.8,1.8,1.2,1.6],
-3005:[50000,40000,50000,40,64000,1.8,1.8,1.8,1.2,1.7],3006:[7500,7000,1000,0,2000,1.3,1.3,1.3,0,1.3],
-3007:[35000,15000,10000,40,16000,1.5,1.5,1.5,1.05,1.4],3008:[50000,20000,30000,40,12000,1.07,1.07,1.07,1.01,1.17],
-3009:[100000,10000,3000,80,40000,1.14,1.14,1.14,1.04,1.3],3010:[100000,40000,20000,60,52000,1.5,1.5,1.5,1.1,1.2],
-3011:[55000,50000,30000,70,50000,1.5,1.5,1.5,1.05,1.3],3012:[250000,125000,125000,100,95000,1.4,1.4,1.4,1.05,1.4],
-3101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],3102:[7500,12500,5000,0,2000,1.3,1.3,1.3,0,1.3],
-3103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],3104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
-3105:[160000,120000,50000,0,4500,1.5,1.5,1.5,0,1.4],3106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
-3107:[70000,40000,20000,0,5500,1.3,1.3,1.3,0,1.3],3108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
-3109:[160000,120000,50000,0,6500,1.5,1.5,1.5,0,1.4],3110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.3],
-3111:[120000,30000,25000,0,7500,1.3,1.3,1.3,0,1.3],3112:[160000,120000,50000,0,8000,1.5,1.5,1.5,0,1.4],
-3113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],3114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
-3115:[320000,240000,100000,0,9500,1.5,1.5,1.5,0,1.4],3116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
-3117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],3118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
-4001:[4,3,0,0,40,1.21,1.21,0,0,1.22],4002:[6,3,0,9,40,1.2,1.2,0,1.02,1.22],
-4003:[20000,15000,15000,10,16000,1.3,1.3,1.3,1.08,1.25],4004:[7500,5000,800,15,16000,1.8,1.8,1.8,1.3,1.7],
-4005:[60000,30000,50000,30,64000,1.8,1.8,1.8,1.3,1.8],4006:[8500,5000,3000,0,2000,1.25,1.25,1.25,0,1.35],
-4007:[15000,15000,5000,0,12000,1.2,1.2,1.2,0,1.2],4008:[75000,25000,30000,30,16000,1.05,1.05,1.05,1.03,1.18],
-4009:[87500,25000,30000,40,40000,1.2,1.2,1.2,1.02,1.2],4010:[150000,30000,30000,140,52000,1.4,1.4,1.4,1.05,1.8],
-4011:[75000,50000,55000,90,90000,1.2,1.2,1.2,1.04,1.3],4012:[500000,250000,250000,100,95000,1.4,1.4,1.4,1.05,1.3],
-4101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.4],4102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
-4103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],4104:[20000,15000,7500,0,3500,1.5,1.5,1.5,0,1.4],
-4105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.4],4106:[50000,50000,20000,0,5000,1.3,1.3,1.3,0,1.4],
-4107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],4108:[80000,50000,20000,0,6000,1.2,1.2,1.2,0,1.2],
-4109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],4110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.2],
-4111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.4],4112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
-4113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],4114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
-4115:[240000,120000,120000,0,9500,1.5,1.5,1.5,0,1.4],4116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
-4117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],4118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4]
+  1001:[7,2,0,0,40,1.2,1.2,0,0,1.21],1002:[5,2,0,8,40,1.23,1.23,0,1.02,1.25],
+  1003:[20000,25000,10000,10,16000,1.3,1.3,1.3,1.08,1.25],1004:[5000,3200,1500,15,16000,1.7,1.7,1.7,1.25,1.6],
+  1005:[50000,40000,50000,30,64000,1.7,1.7,1.7,1.25,1.7],1006:[9000,6000,3000,40,2000,1.5,1.5,1.5,1.1,1.3],
+  1007:[25000,13000,7000,0,12000,1.09,1.09,1.09,0,1.17],1008:[50000,25000,15000,80,28000,1.5,1.5,1.5,1.1,1.2],
+  1009:[75000,20000,25000,50,40000,1.09,1.09,1.09,1.02,1.2],1010:[150000,30000,15000,60,52000,1.12,1.12,1.12,1.03,1.2],
+  1011:[80000,35000,60000,90,90000,1.5,1.5,1.5,1.05,1.3],1012:[250000,125000,125000,100,95000,1.15,1.15,1.15,1.02,1.2],
+  1101:[5000,2500,500,0,1000,1.3,1.3,1.3,0,1.2],1102:[7000,10000,5000,0,2000,1.5,1.5,1.5,0,1.3],
+  1103:[15000,10000,5000,0,2500,1.3,1.3,1.3,0,1.3],1104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
+  1105:[25000,20000,10000,0,4140,1.3,1.3,1.3,0,1.2],1106:[35000,25000,15000,0,5000,1.5,1.5,1.5,0,1.3],
+  1107:[70000,40000,20000,0,8000,1.3,1.3,1.3,0,1.3],1108:[80000,50000,20000,0,6000,1.5,1.5,1.5,0,1.3],
+  1109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],1110:[320000,240000,100000,0,7000,1.5,1.5,1.5,0,1.4],
+  1111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],1112:[100000,40000,30000,0,10000,1.3,1.3,1.3,0,1.3],
+  1113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],1114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+  1115:[160000,120000,50000,0,9500,1.5,1.5,1.5,0,1.4],1116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+  1117:[300000,180000,120000,0,11000,1.5,1.5,1.5,0,1.3],1118:[500000,300000,200000,0,13000,1.3,1.3,1.3,0,1.3],
+  2001:[9,3,0,0,40,1.2,1.2,0,0,1.21],2002:[7,2,0,10,40,1.2,1.2,0,1.03,1.21],
+  2003:[40000,10000,15000,15,16000,1.3,1.3,1.3,1.1,1.25],2004:[5000,3800,1000,20,16000,1.7,1.7,1.7,1.35,1.6],
+  2005:[50000,40000,50000,60,64000,1.65,1.65,1.65,1.3,1.7],2006:[10000,8000,1000,40,2000,1.4,1.4,1.4,1.1,1.3],
+  2007:[20000,15000,10000,0,16000,1.2,1.2,1.2,0,1.25],2008:[50000,35000,15000,80,40000,1.5,1.5,1.5,1.3,1.4],
+  2009:[85000,44000,25000,90,40000,1.4,1.4,1.4,1.1,1.2],2010:[120000,50000,20000,90,52000,1.4,1.4,1.4,1.1,1.2],
+  2011:[250000,150000,100000,120,90000,1.8,1.8,1.8,1.3,1.3],2012:[250000,125000,125000,100,95000,1.5,1.5,1.5,1.1,1.3],
+  2101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],2102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
+  2103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.3],2104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.4],
+  2105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.3],2106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
+  2107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],2108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
+  2109:[75000,55000,25000,0,6500,1.5,1.5,1.5,0,1.3],2110:[85000,40000,35000,0,7000,1.5,1.5,1.5,0,1.3],
+  2111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.3],2112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
+  2113:[200000,100000,100000,0,8500,1.2,1.2,1.2,0,1.3],2114:[220000,110000,110000,0,9000,1.3,1.3,1.3,0,1.3],
+  2115:[240000,120000,120000,0,9500,1.3,1.3,1.3,0,1.3],2116:[250000,250000,250000,0,10000,1.4,1.4,1.4,0,1.4],
+  2117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],2118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
+  3001:[6,2,0,0,40,1.21,1.21,0,0,1.22],3002:[5,2,0,8,48,1.18,1.18,0,1.02,1.2],
+  3003:[30000,20000,10000,13,16000,1.3,1.3,1.3,1.08,1.25],3004:[5000,3800,1000,10,16000,1.8,1.8,1.8,1.2,1.6],
+  3005:[50000,40000,50000,40,64000,1.8,1.8,1.8,1.2,1.7],3006:[7500,7000,1000,0,2000,1.3,1.3,1.3,0,1.3],
+  3007:[35000,15000,10000,40,16000,1.5,1.5,1.5,1.05,1.4],3008:[50000,20000,30000,40,12000,1.07,1.07,1.07,1.01,1.17],
+  3009:[100000,10000,3000,80,40000,1.14,1.14,1.14,1.04,1.3],3010:[100000,40000,20000,60,52000,1.5,1.5,1.5,1.1,1.2],
+  3011:[55000,50000,30000,70,50000,1.5,1.5,1.5,1.05,1.3],3012:[250000,125000,125000,100,95000,1.4,1.4,1.4,1.05,1.4],
+  3101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.3],3102:[7500,12500,5000,0,2000,1.3,1.3,1.3,0,1.3],
+  3103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],3104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
+  3105:[160000,120000,50000,0,4500,1.5,1.5,1.5,0,1.4],3106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
+  3107:[70000,40000,20000,0,5500,1.3,1.3,1.3,0,1.3],3108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
+  3109:[160000,120000,50000,0,6500,1.5,1.5,1.5,0,1.4],3110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.3],
+  3111:[120000,30000,25000,0,7500,1.3,1.3,1.3,0,1.3],3112:[160000,120000,50000,0,8000,1.5,1.5,1.5,0,1.4],
+  3113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],3114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+  3115:[320000,240000,100000,0,9500,1.5,1.5,1.5,0,1.4],3116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+  3117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],3118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4],
+  4001:[4,3,0,0,40,1.21,1.21,0,0,1.22],4002:[6,3,0,9,40,1.2,1.2,0,1.02,1.22],
+  4003:[20000,15000,15000,10,16000,1.3,1.3,1.3,1.08,1.25],4004:[7500,5000,800,15,16000,1.8,1.8,1.8,1.3,1.7],
+  4005:[60000,30000,50000,30,64000,1.8,1.8,1.8,1.3,1.8],4006:[8500,5000,3000,0,2000,1.25,1.25,1.25,0,1.35],
+  4007:[15000,15000,5000,0,12000,1.2,1.2,1.2,0,1.2],4008:[75000,25000,30000,30,16000,1.05,1.05,1.05,1.03,1.18],
+  4009:[87500,25000,30000,40,40000,1.2,1.2,1.2,1.02,1.2],4010:[150000,30000,30000,140,52000,1.4,1.4,1.4,1.05,1.8],
+  4011:[75000,50000,55000,90,90000,1.2,1.2,1.2,1.04,1.3],4012:[500000,250000,250000,100,95000,1.4,1.4,1.4,1.05,1.3],
+  4101:[10000,6000,1000,0,1000,1.5,1.5,1.5,0,1.4],4102:[7500,12500,5000,0,2000,1.5,1.5,1.5,0,1.3],
+  4103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],4104:[20000,15000,7500,0,3500,1.5,1.5,1.5,0,1.4],
+  4105:[25000,20000,10000,0,4500,1.5,1.5,1.5,0,1.4],4106:[50000,50000,20000,0,5000,1.3,1.3,1.3,0,1.4],
+  4107:[70000,40000,20000,0,5500,1.5,1.5,1.5,0,1.3],4108:[80000,50000,20000,0,6000,1.2,1.2,1.2,0,1.2],
+  4109:[320000,240000,100000,0,6500,1.5,1.5,1.5,0,1.4],4110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.2],
+  4111:[120000,30000,25000,0,7500,1.5,1.5,1.5,0,1.4],4112:[100000,40000,30000,0,8000,1.5,1.5,1.5,0,1.3],
+  4113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],4114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
+  4115:[240000,120000,120000,0,9500,1.5,1.5,1.5,0,1.4],4116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
+  4117:[500000,300000,200000,0,13000,1.5,1.5,1.5,0,1.3],4118:[300000,180000,120000,0,11000,1.7,1.7,1.7,0,1.4]
 };
-
 const LF_BUILDING_FILENAMES = {
-1001:'residential_sector.png',1002:'biosphere_farm.png',1003:'research_center.png',
-1004:'science_academy.png',1005:'nerve_calibration_center.png',1006:'high_energy_melting.png',
-1007:'food_storage.png',1008:'fusion_powered_production.png',1009:'skyscraper.png',
-1010:'biotech_lab.png',1011:'metropolis.png',1012:'planetary_shield.png',
-2001:'meditation_enclave.png',2002:'crystal_farm.png',2003:'rune_technologium.png',
-2004:'rune_forge.png',2005:'orikterium.png',2006:'magma_forge.png',
-2007:'chamber_of_rupture.png',2008:'megalith.png',2009:'crystal_purification.png',
-2010:'deuterium_synthesizer.png',2011:'mineral_research_center.png',2012:'advanced_recycling_unit.png',
-3001:'assembly_line.png',3002:'fusion_cell_factory.png',3003:'robotics_research_center.png',
-3004:'upgrade_network.png',3005:'quantum_computer_center.png',3006:'automated_assembly_center.png',
-3007:'high_performance_transformer.png',3008:'microchip_line.png',3009:'production_assembly_workshop.png',
-3010:'high_performance_synthesizer.png',3011:'mass_chip_production.png',3012:'repair_nanobots.png',
-4001:'sanctuary.png',4002:'antimatter_condenser.png',4003:'cyclone_chamber.png',
-4004:'hall_of_realization.png',4005:'transcendental_forum.png',4006:'antimatter_converter.png',
-4007:'cloning_lab.png',4008:'chrysalis_accelerator.png',4009:'biomodifier.png',
-4010:'psionic_modulator.png',4011:'ship_production_hall.png',4012:'supra_refractor.png'
+  1001:'residential_sector.png',1002:'biosphere_farm.png',1003:'research_center.png',
+  1004:'science_academy.png',1005:'nerve_calibration_center.png',1006:'high_energy_melting.png',
+  1007:'food_storage.png',1008:'fusion_powered_production.png',1009:'skyscraper.png',
+  1010:'biotech_lab.png',1011:'metropolis.png',1012:'planetary_shield.png',
+  2001:'meditation_enclave.png',2002:'crystal_farm.png',2003:'rune_technologium.png',
+  2004:'rune_forge.png',2005:'orikterium.png',2006:'magma_forge.png',
+  2007:'chamber_of_rupture.png',2008:'megalith.png',2009:'crystal_purification.png',
+  2010:'deuterium_synthesizer.png',2011:'mineral_research_center.png',2012:'advanced_recycling_unit.png',
+  3001:'assembly_line.png',3002:'fusion_cell_factory.png',3003:'robotics_research_center.png',
+  3004:'upgrade_network.png',3005:'quantum_computer_center.png',3006:'automated_assembly_center.png',
+  3007:'high_performance_transformer.png',3008:'microchip_line.png',3009:'production_assembly_workshop.png',
+  3010:'high_performance_synthesizer.png',3011:'mass_chip_production.png',3012:'repair_nanobots.png',
+  4001:'sanctuary.png',4002:'antimatter_condenser.png',4003:'cyclone_chamber.png',
+  4004:'hall_of_realization.png',4005:'transcendental_forum.png',4006:'antimatter_converter.png',
+  4007:'cloning_lab.png',4008:'chrysalis_accelerator.png',4009:'biomodifier.png',
+  4010:'psionic_modulator.png',4011:'ship_production_hall.png',4012:'supra_refractor.png'
 };
-
 const LF_RESEARCH_FILENAMES = {
-1101:'intergalactic_envoys.png',1102:'high_efficiency_extractors.png',1103:'fusion_drives.png',
-1104:'stealth_field_generator.png',1105:'orbital_dock.png',1106:'research_ai.png',
-1107:'high_performance_terraformer.png',1108:'enhanced_extraction_technologies.png',1109:'light_fighter_mk_ii.png',
-1110:'cruiser_mk_ii.png',1111:'enhanced_laboratory_technology.png',1112:'plasma_terraformer.png',
-1113:'low_temperature_drives.png',1114:'bomber_mk_ii.png',1115:'destroyer_mk_ii.png',
-1116:'battlecruiser_mk_ii.png',1117:'assistant_robots.png',1118:'supercomputer.png',
-2101:'volcanic_batteries.png',2102:'acoustic_scanning.png',2103:'high_energy_supply_systems.png',
-2104:'cargo_hold_expansion.png',2105:'magma_powered_production.png',2106:'geothermal_power_plants.png',
-2107:'echo_sounding.png',2108:'ion_crystal_enhancement.png',2109:'enhanced_stellarator.png',
-2110:'reinforced_diamond_drills.png',2111:'seismic_extraction_technology.png',2112:'magma_powered_supply_systems.png',
-2113:'ionized_crystal_modules.png',2114:'optimized_mine_construction.png',2115:'diamond_energy_transmitter.png',
-2116:'obsidian_shield_plating.png',2117:'rune_shields.png',2118:'rocktal_collector_enhancement.png',
-3101:'catalyst_technology.png',3102:'plasma_drive.png',3103:'efficiency_module.png',
-3104:'warehouse_ai.png',3105:'general_repair_light_fighter.png',3106:'automated_transport_lines.png',
-3107:'enhanced_drone_ai.png',3108:'experimental_recycling_technology.png',3109:'general_repair_cruiser.png',
-3110:'gravitational_maneuver_autopilot.png',3111:'high_temperature_superconductors.png',3112:'general_repair_battleship.png',
-3113:'swarm_ai.png',3114:'general_repair_battlecruiser.png',3115:'general_repair_bomber.png',
-3116:'general_repair_destroyer.png',3117:'experimental_weapon_technology.png',3118:'mechas_overall_enhancement.png',
-4101:'waste_heat_recovery.png',4102:'sulfide_process.png',4103:'psionic_network.png',
-4104:'telekinetic_grab_beam.png',4105:'enhanced_sensor_technology.png',4106:'neuromodal_compressor.png',
-4107:'neuro_interface.png',4108:'interplanetary_analytical_network.png',4109:'speed_boost_heavy_fighter.png',
-4110:'telekinetic_drive.png',4111:'sixth_sense.png',4112:'psycho_harmonizer.png',
-4113:'efficient_swarm_intelligence.png',4114:'speed_boost_large_cargo.png',4115:'gravitational_sensors.png',
-4116:'speed_boost_battleship.png',4117:'psionic_shield_matrix.png',4118:'kaelesh_explorer_enhancement.png'
+  1101:'intergalactic_envoys.png',1102:'high_efficiency_extractors.png',1103:'fusion_drives.png',
+  1104:'stealth_field_generator.png',1105:'orbital_dock.png',1106:'research_ai.png',
+  1107:'high_performance_terraformer.png',1108:'enhanced_extraction_technologies.png',1109:'light_fighter_mk_ii.png',
+  1110:'cruiser_mk_ii.png',1111:'enhanced_laboratory_technology.png',1112:'plasma_terraformer.png',
+  1113:'low_temperature_drives.png',1114:'bomber_mk_ii.png',1115:'destroyer_mk_ii.png',
+  1116:'battlecruiser_mk_ii.png',1117:'assistant_robots.png',1118:'supercomputer.png',
+  2101:'volcanic_batteries.png',2102:'acoustic_scanning.png',2103:'high_energy_supply_systems.png',
+  2104:'cargo_hold_expansion.png',2105:'magma_powered_production.png',2106:'geothermal_power_plants.png',
+  2107:'echo_sounding.png',2108:'ion_crystal_enhancement.png',2109:'enhanced_stellarator.png',
+  2110:'reinforced_diamond_drills.png',2111:'seismic_extraction_technology.png',2112:'magma_powered_supply_systems.png',
+  2113:'ionized_crystal_modules.png',2114:'optimized_mine_construction.png',2115:'diamond_energy_transmitter.png',
+  2116:'obsidian_shield_plating.png',2117:'rune_shields.png',2118:'rocktal_collector_enhancement.png',
+  3101:'catalyst_technology.png',3102:'plasma_drive.png',3103:'efficiency_module.png',
+  3104:'warehouse_ai.png',3105:'general_repair_light_fighter.png',3106:'automated_transport_lines.png',
+  3107:'enhanced_drone_ai.png',3108:'experimental_recycling_technology.png',3109:'general_repair_cruiser.png',
+  3110:'gravitational_maneuver_autopilot.png',3111:'high_temperature_superconductors.png',3112:'general_repair_battleship.png',
+  3113:'swarm_ai.png',3114:'general_repair_battlecruiser.png',3115:'general_repair_bomber.png',
+  3116:'general_repair_destroyer.png',3117:'experimental_weapon_technology.png',3118:'mechas_overall_enhancement.png',
+  4101:'waste_heat_recovery.png',4102:'sulfide_process.png',4103:'psionic_network.png',
+  4104:'telekinetic_grab_beam.png',4105:'enhanced_sensor_technology.png',4106:'neuromodal_compressor.png',
+  4107:'neuro_interface.png',4108:'interplanetary_analytical_network.png',4109:'speed_boost_heavy_fighter.png',
+  4110:'telekinetic_drive.png',4111:'sixth_sense.png',4112:'psycho_harmonizer.png',
+  4113:'efficient_swarm_intelligence.png',4114:'speed_boost_large_cargo.png',4115:'gravitational_sensors.png',
+  4116:'speed_boost_battleship.png',4117:'psionic_shield_matrix.png',4118:'kaelesh_explorer_enhancement.png'
 };
-
 const RACES = ['humans', 'rocktal', 'mechas', 'kaelesh'];
 const RACE_PREFIX = { humans: '1', rocktal: '2', mechas: '3', kaelesh: '4' };
 const BONUS_INPUT_IDS = ['megalithLevel', 'mrcLevel', 'runoLevel', 'humansLevel', 'mechasLevel', 'kaeleshLevel'];
-
 const DEFAULT_SETTINGS = {
   tmPerBox: 42000,
   tmPackSize: 12500000,
   packPriceTRY: 900,
   rates: { ...CONFIG.CURRENCY_RATES }
 };
-
 const MAX_CALC_VALUE = Number.MAX_SAFE_INTEGER;
-
 const clampCalc = (value) => {
   if (!Number.isFinite(value)) return MAX_CALC_VALUE;
   const rounded = Math.round(value);
   if (rounded < 0) return 0;
   return rounded > MAX_CALC_VALUE ? MAX_CALC_VALUE : rounded;
 };
-
 const addCapped = (a, b) => {
   const sum = a + b;
   if (!Number.isFinite(sum) || sum > MAX_CALC_VALUE) return MAX_CALC_VALUE;
   return sum;
 };
-
 const emptyTotals = () => ({ m: 0, c: 0, d: 0, p: 0, total: 0 });
 const emptyRaceTotals = () => ({ buildings: emptyTotals(), research: emptyTotals() });
 const freshLfTotals = () => Object.fromEntries(RACES.map((r) => [r, emptyRaceTotals()]));
-
 let lfTotals = freshLfTotals();
 const TOTALS = {
   buildings: emptyTotals(),
@@ -269,7 +246,6 @@ const TOTALS = {
   research: emptyTotals(),
   fleet: emptyTotals()
 };
-
 let fleetInputs = [];
 let fleetSummaryCells = {};
 let fleetTableBuilt = false;
@@ -283,33 +259,27 @@ let lfTotalsSavePending = false;
 let currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 let researchDiscounts = loadResearchDiscounts();
 let transportCapacities = loadTransportCapacities();
-
 function $(id) {
   return document.getElementById(id);
 }
-
 function safeGet(key, def) {
   try {
     const v = localStorage.getItem(key);
     return v !== null ? v : def;
   } catch (e) { return def; }
 }
-
 function safeSet(key, value) {
   try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
 }
-
 function safeRemove(key) {
   try { localStorage.removeItem(key); } catch (e) {}
 }
-
 function safeJsonParse(value, fallback) {
   try {
     const parsed = JSON.parse(value);
     return parsed === null ? fallback : parsed;
   } catch (e) { return fallback; }
 }
-
 function migrateKey(oldKey, newKey) {
   try {
     if (localStorage.getItem(newKey) === null && localStorage.getItem(oldKey) !== null) {
@@ -318,23 +288,18 @@ function migrateKey(oldKey, newKey) {
     }
   } catch (e) {}
 }
-
 const scheduleIdle = window.requestIdleCallback
   ? (fn) => window.requestIdleCallback(fn, { timeout: 1500 })
   : (fn) => setTimeout(fn, 300);
-
 function safeSetIdle(key, value) {
   scheduleIdle(() => safeSet(key, value));
 }
-
 const normalizeRace = (race) => (RACES.includes(race) ? race : 'humans');
 const sanitizeInput = (v) => (!v ? '' : String(v).replace(/[^0-9]/g, '').slice(0, 15));
-
 function formatWithDotsRaw(input) {
   const digits = String(input ?? '').replace(/[^0-9]/g, '');
   return digits ? Number(digits).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
 }
-
 function formatNumberWithDots(n) {
   if (n === null || n === undefined || Number.isNaN(n)) return '0';
   const value = Math.round(Number(n) || 0);
@@ -342,7 +307,6 @@ function formatNumberWithDots(n) {
   const abs = Math.abs(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return value < 0 ? '-' + abs : abs;
 }
-
 function parseNumberInput(s) {
   if (s === null || s === undefined) return 0;
   const str = String(s).trim();
@@ -351,13 +315,11 @@ function parseNumberInput(s) {
   if (!Number.isFinite(num)) return 0;
   return Math.min(num, Number.MAX_SAFE_INTEGER);
 }
-
 function parseInputValue(el) {
   if (!el) return 0;
   const clean = String(el.value).replace(/[^0-9]/g, '').slice(0, 15);
   return Math.min(Number(clean) || 0, Number.MAX_SAFE_INTEGER);
 }
-
 function parseSettingsNumber(v, fallback = 0) {
   if (v === null || v === undefined || v === '') return fallback;
   const str = String(v).trim();
@@ -367,17 +329,17 @@ function parseSettingsNumber(v, fallback = 0) {
   let cleaned;
   if (hasComma && hasDot) {
     cleaned = str.lastIndexOf(',') > str.lastIndexOf('.')
-      ? str.replace(/./g, '').replace(',', '.')
+      ? str.replace(/\./g, '').replace(',', '.')
       : str.replace(/,/g, '');
   } else if (hasComma) {
     cleaned = str.replace(/,/g, '.');
   } else if (hasDot) {
-    const dotCount = (str.match(/./g) || []).length;
+    const dotCount = (str.match(/\./g) || []).length;
     if (dotCount > 1) {
-      cleaned = str.replace(/./g, '');
+      cleaned = str.replace(/\./g, '');
     } else {
       const afterDot = str.slice(str.indexOf('.') + 1);
-      cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/./g, '') : str;
+      cleaned = (afterDot.length >= 3 && /^\d+$/.test(afterDot)) ? str.replace(/\./g, '') : str;
     }
   } else {
     cleaned = str;
@@ -385,9 +347,7 @@ function parseSettingsNumber(v, fallback = 0) {
   const n = parseFloat(cleaned);
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
-
 const convertToMetal = (m, c, d) => (m || 0) + (c || 0) * CONFIG.METAL_EQ_CRYSTAL + (d || 0) * CONFIG.METAL_EQ_DEUT;
-
 function debounce(fn, wait) {
   let t = null;
   return function (...args) {
@@ -395,7 +355,6 @@ function debounce(fn, wait) {
     t = setTimeout(() => fn.apply(this, args), wait);
   };
 }
-
 function debounceAdaptive(fn, wait, perfWait = wait * 2) {
   let t = null;
   return function (...args) {
@@ -403,14 +362,11 @@ function debounceAdaptive(fn, wait, perfWait = wait * 2) {
     t = setTimeout(() => fn.apply(this, args), isPerfMode() ? perfWait : wait);
   };
 }
-
 const currentLang = () => {
   const saved = safeGet(KEYS.LANG, 'ru');
   return LANGUAGES[saved] ? saved : 'ru';
 };
-
 const getDict = () => (window.getLangDict ? window.getLangDict(currentLang()) : {});
-
 function normalizeLocalizedText(value) {
   if (window.normalizeLangText) return window.normalizeLangText(value);
   return String(value ?? '')
@@ -419,7 +375,6 @@ function normalizeLocalizedText(value) {
     .replace(/\s+([,.:;!?%])/g, '$1')
     .trim();
 }
-
 function setTextPreservingChildren(el, text) {
   let textNode = null;
   el.childNodes.forEach((node) => {
@@ -434,7 +389,6 @@ function setTextPreservingChildren(el, text) {
   }
   el.normalize();
 }
-
 function applyI18nAttributes() {
   const dict = getDict();
   document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -452,7 +406,6 @@ function applyI18nAttributes() {
   const tmInput = $('tmInput');
   if (tmInput) tmInput.placeholder = CONFIG.TM_INPUT_PLACEHOLDER;
 }
-
 function auditI18nKeys() {
   try {
     if (safeGet('og_calc_debug_i18n', '0') !== '1') return;
@@ -472,14 +425,12 @@ function auditI18nKeys() {
     console.warn('i18n audit failed', e);
   }
 }
-
 function resSpan(cls, n) {
   const s = document.createElement('span');
   s.className = cls;
   s.textContent = formatNumberWithDots(n);
   return s;
 }
-
 function makeIcon(src, alt, size = 20) {
   const img = document.createElement('img');
   img.src = src;
@@ -502,7 +453,6 @@ function makeIcon(src, alt, size = 20) {
   return img;
 }
 window.makeIcon = makeIcon;
-
 function updateResourceCell(td, value) {
   if (!td) return;
   const formatted = formatNumberWithDots(value);
@@ -517,7 +467,6 @@ function updateResourceCell(td, value) {
   }
   td._span.textContent = formatted;
 }
-
 class LimitedCache {
   constructor(maxSize = 2000) {
     this.cache = new Map();
@@ -540,9 +489,7 @@ class LimitedCache {
   }
   clear() { this.cache.clear(); }
 }
-
 const calcCache = new LimitedCache(2000);
-
 function cached(key, fn) {
   const hit = calcCache.get(key);
   if (hit !== undefined) return hit;
@@ -550,7 +497,6 @@ function cached(key, fn) {
   calcCache.set(key, result);
   return result;
 }
-
 function geomSum(base, factor, from, to) {
   return cached(`geom_${base.m}_${base.c}_${base.d}_${factor}_${from}_${to}`, () => {
     const count = Math.max(0, to - from);
@@ -569,7 +515,6 @@ function geomSum(base, factor, from, to) {
     return { m, c, d, points: clampCalc((m + c + d) / 1000), levels: count };
   });
 }
-
 function calcBuildCostLF(techId, level, rdc) {
   return cached(`build_${techId}_${level}_${rdc}`, () => {
     const d = LF_TECH_COSTS[techId];
@@ -584,7 +529,6 @@ function calcBuildCostLF(techId, level, rdc) {
     });
   });
 }
-
 function getBuildCostLF(techId, from, to, rsrRdc, bldRdc = 0) {
   return cached(`range_${techId}_${from}_${to}_${rsrRdc}_${bldRdc}`, () => {
     const total = [0, 0, 0];
@@ -598,16 +542,13 @@ function getBuildCostLF(techId, from, to, rsrRdc, bldRdc = 0) {
     return total;
   });
 }
-
 function loadResearchDiscounts() {
   const data = safeJsonParse(safeGet(KEYS.RESEARCH_DISCOUNTS, '{}'), {});
   return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
 }
-
 function saveResearchDiscounts() {
   safeSet(KEYS.RESEARCH_DISCOUNTS, JSON.stringify(researchDiscounts));
 }
-
 function loadTransportCapacities() {
   const data = safeJsonParse(safeGet(KEYS.TRANSPORT_CAPACITY, 'null'), null);
   return {
@@ -615,46 +556,39 @@ function loadTransportCapacities() {
     large_cargo: (data && data.large_cargo > 0) ? data.large_cargo : TRANSPORT_DEFAULTS.large_cargo
   };
 }
-
 function saveTransportCapacities() {
   safeSet(KEYS.TRANSPORT_CAPACITY, JSON.stringify(transportCapacities));
 }
-
 function sanitizeDiscountInput(value) {
   let s = String(value ?? '').trim().replace(',', '.');
   s = s.replace(/[^0-9.]/g, '');
   const dot = s.indexOf('.');
-  if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/./g, '');
+  if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
   if (s.startsWith('.')) s = '0' + s;
   s = s.replace(/^0+(?=\d)/, '');
   return s;
 }
-
 function getResearchDiscountPct(idx) {
   const raw = Number(researchDiscounts[idx]);
   if (!Number.isFinite(raw) || raw <= 0) return 0;
   return Math.min(99, raw);
 }
-
 function getResearchDiscountLabel(idx) {
   const pct = getResearchDiscountPct(idx);
   if (pct <= 0) return '';
   const label = sanitizeDiscountInput(researchDiscounts[idx]);
   return parseFloat(label) === pct ? label : String(pct);
 }
-
 function formatDiscountChip(label) {
   const dot = label.indexOf('.');
   return dot === -1 ? label : label.slice(0, dot + 3);
 }
-
 function getRowRefs(tbody) {
   if (!tbody._rowsCache) {
     tbody._rowsCache = Array.from(tbody.querySelectorAll('tr[data-index]'));
   }
   return tbody._rowsCache;
 }
-
 function createTableRow({ index, techId, name, iconPath, dataset, showPlanets, planetsType }) {
   const tr = document.createElement('tr');
   tr.dataset.index = index;
@@ -715,7 +649,6 @@ function createTableRow({ index, techId, name, iconPath, dataset, showPlanets, p
   tr._refs = refs;
   return tr;
 }
-
 function createTransportNeededRow(shipId, dict, cols, source) {
   const tr = document.createElement('tr');
   tr.className = 'transport-needed-row';
@@ -759,7 +692,6 @@ function createTransportNeededRow(shipId, dict, cols, source) {
   chip.addEventListener('click', openEditor);
   return tr;
 }
-
 function insertTransportRowsAfterTotal(totalSpanId, dict, cols, source) {
   document.querySelectorAll('.transport-needed-row[data-source="' + source + '"]').forEach((r) => r.remove());
   const totalSpan = $(totalSpanId);
@@ -777,7 +709,6 @@ function insertTransportRowsAfterTotal(totalSpanId, dict, cols, source) {
   parent.appendChild(createTransportNeededRow('large_cargo', dict, actualCols, source));
   parent.appendChild(createTransportNeededRow('small_cargo', dict, actualCols, source));
 }
-
 function openTransportCapacityEditor(tr, shipId) {
   if (!tr || tr._transportEditor) return;
   const refs = tr._transportRefs;
@@ -831,7 +762,6 @@ function openTransportCapacityEditor(tr, shipId) {
     if (!editor.contains(e.relatedTarget)) commit();
   });
 }
-
 function getTransportSourceTotals(source) {
   if (isSumAllTabsMode) {
     let m = 0, c = 0, d = 0;
@@ -857,7 +787,6 @@ function getTransportSourceTotals(source) {
   else t = TOTALS[source] || emptyTotals();
   return addCapped(addCapped(t.m, t.c), t.d);
 }
-
 function updateTransportNeededRows() {
   document.querySelectorAll('.transport-needed-row').forEach((tr) => {
     const shipId = tr.dataset.transport;
@@ -875,7 +804,6 @@ function updateTransportNeededRows() {
     }
   });
 }
-
 function scheduleGlobalUpdate() {
   if (batchRecalc || pendingGlobalUpdate) return;
   pendingGlobalUpdate = true;
@@ -886,7 +814,6 @@ function scheduleGlobalUpdate() {
     updateTransportNeededRows();
   });
 }
-
 function buildRowsBuildings() {
   const tbody = $('tbodyBuildings');
   if (!tbody) return;
@@ -909,7 +836,6 @@ function buildRowsBuildings() {
   attachLvlInputHandlers();
   insertTransportRowsAfterTotal('sumTotalMetalB', getDict(), 8, 'buildings');
 }
-
 function buildRowsResearch() {
   const tbody = $('tbodyResearch');
   if (!tbody) return;
@@ -948,7 +874,6 @@ function buildRowsResearch() {
   attachLvlInputHandlers();
   insertTransportRowsAfterTotal('sumTotalMetalR', dict, 7, 'research');
 }
-
 function openDiscountEditor(tr, idx) {
   if (!tr || tr._discEditor) return;
   const refs = tr._refs;
@@ -1004,7 +929,6 @@ function openDiscountEditor(tr, idx) {
     if (!editor.contains(e.relatedTarget)) commit();
   });
 }
-
 function buildRowsMoonBuildings() {
   const tbody = $('tbodyMoonBuildings');
   if (!tbody) return;
@@ -1025,7 +949,6 @@ function buildRowsMoonBuildings() {
   attachLvlInputHandlers();
   insertTransportRowsAfterTotal('sumTotalMetalMoon', dict, 8, 'moonBuildings');
 }
-
 function buildRowsLfBuildings() {
   const tbody = $('tbodyLfBuildings');
   if (!tbody) return;
@@ -1049,7 +972,6 @@ function buildRowsLfBuildings() {
   attachLvlInputHandlers();
   insertTransportRowsAfterTotal('sumTotalMetalLfB', dict, 8, 'lfBuildings');
 }
-
 function buildRowsLfResearch() {
   const tbody = $('tbodyLfResearch');
   if (!tbody) return;
@@ -1073,7 +995,6 @@ function buildRowsLfResearch() {
   attachLvlInputHandlers();
   insertTransportRowsAfterTotal('sumTotalMetalLfR', dict, 8, 'lfResearch');
 }
-
 function updateTableRowNames(tbodyId, namesArray) {
   const tbody = $(tbodyId);
   if (!tbody) return;
@@ -1085,7 +1006,6 @@ function updateTableRowNames(tbodyId, namesArray) {
     }
   });
 }
-
 function updateMoonTableNames() {
   const dict = getDict();
   const tbody = $('tbodyMoonBuildings');
@@ -1099,7 +1019,6 @@ function updateMoonTableNames() {
     }
   });
 }
-
 function updateFleetTableNames() {
   const dict = getDict();
   document.querySelectorAll('#shipsTable tbody tr[data-row-id]').forEach((tr) => {
@@ -1110,7 +1029,6 @@ function updateFleetTableNames() {
     }
   });
 }
-
 function updateLfTableNames(tbodyId, dictKey) {
   const tbody = $(tbodyId);
   if (!tbody) return;
@@ -1123,7 +1041,6 @@ function updateLfTableNames(tbodyId, dictKey) {
     }
   });
 }
-
 function updateTransportRowNames() {
   const dict = getDict();
   document.querySelectorAll('.transport-needed-row').forEach((tr) => {
@@ -1137,7 +1054,6 @@ function updateTransportRowNames() {
     }
   });
 }
-
 function updateAllTableNamesOnly() {
   const buildingNames = window.getBuildingNames
     ? window.getBuildingNames(currentLang())
@@ -1153,7 +1069,6 @@ function updateAllTableNamesOnly() {
   updateLfTableNames('tbodyLfResearch', 'lf_r_');
   updateTransportRowNames();
 }
-
 function recalcStandardTable(tbodyId, dataArray, sumIds, isMoon = false) {
   const tbody = $(tbodyId);
   if (!tbody) return;
@@ -1205,7 +1120,6 @@ function recalcStandardTable(tbodyId, dataArray, sumIds, isMoon = false) {
   TOTALS[isMoon ? 'moonBuildings' : 'buildings'] = { m: tm, c: tc, d: td, p: tp, total: totalMetal };
   scheduleGlobalUpdate();
 }
-
 function recalcLfTable(tbodyId, isBuilding) {
   const tbody = $(tbodyId);
   if (!tbody) return;
@@ -1275,18 +1189,14 @@ function recalcLfTable(tbodyId, isBuilding) {
   saveLfTotalsSoon();
   scheduleGlobalUpdate();
 }
-
 const recalcAllBuildings = () => recalcStandardTable('tbodyBuildings', BUILDINGS, {
   m: 'sumMetalB', c: 'sumCrystalB', d: 'sumDeutB', p: 'sumPointsB', total: 'sumTotalMetalB'
 });
-
 const recalcAllMoonBuildings = () => recalcStandardTable('tbodyMoonBuildings', MOON_BUILDINGS, {
   m: 'sumMetalMoon', c: 'sumCrystalMoon', d: 'sumDeutMoon', p: 'sumPointsMoon', total: 'sumTotalMetalMoon'
 }, true);
-
 const recalcAllLfBuildings = () => recalcLfTable('tbodyLfBuildings', true);
 const recalcAllLfResearch = () => recalcLfTable('tbodyLfResearch', false);
-
 function recalcAllResearch() {
   const tbody = $('tbodyResearch');
   if (!tbody) return;
@@ -1339,7 +1249,6 @@ function recalcAllResearch() {
   if (tmTotalEl) tmTotalEl.textContent = `${normalizeLocalizedText(dict.totalTMLabel || 'Итого:')} ${formatNumberWithDots(totalTM)}`;
   scheduleGlobalUpdate();
 }
-
 function recalcAll() {
   batchRecalc = true;
   recalcAllBuildings();
@@ -1351,7 +1260,6 @@ function recalcAll() {
   batchRecalc = false;
   scheduleGlobalUpdate();
 }
-
 function renderTable() {
   const tableBody = document.querySelector('#shipsTable tbody');
   if (!tableBody) return;
@@ -1460,7 +1368,6 @@ function renderTable() {
     }, 150));
   }
 }
-
 function restoreFleetQtyInputs() {
   const qtyMap = safeJsonParse(safeGet(KEYS.SHIP_QTY, '{}'), {});
   fleetInputs.forEach((inp) => {
@@ -1468,7 +1375,6 @@ function restoreFleetQtyInputs() {
     inp.value = q > 0 ? formatWithDotsRaw(q) : '';
   });
 }
-
 function computeFleet() {
   let fm = 0, fc = 0, fd = 0, fp = 0;
   fleetInputs.forEach((inp) => {
@@ -1499,7 +1405,6 @@ function computeFleet() {
   TOTALS.fleet = { m: fm, c: fc, d: fd, p: fp, total: totalMetal };
   scheduleGlobalUpdate();
 }
-
 function saveShipQuantities() {
   const qtyMap = {};
   fleetInputs.forEach((inp) => {
@@ -1507,7 +1412,6 @@ function saveShipQuantities() {
   });
   safeSet(KEYS.SHIP_QTY, JSON.stringify(qtyMap));
 }
-
 function attachLiveThousandsFormatting(selector) {
   document.querySelectorAll(selector).forEach((inp) => {
     if (inp.thousandsBound) return;
@@ -1561,7 +1465,6 @@ function attachLiveThousandsFormatting(selector) {
     });
   });
 }
-
 function attachLvlInputHandlers() {
   document.querySelectorAll('.lvl-input').forEach((inp) => {
     if (inp._lvlBound) return;
@@ -1587,7 +1490,6 @@ function attachLvlInputHandlers() {
     });
   });
 }
-
 function attachBonusInputHandlers() {
   BONUS_INPUT_IDS.forEach((id) => {
     const el = $(id);
@@ -1609,7 +1511,6 @@ function attachBonusInputHandlers() {
     el._bonusBound = true;
   });
 }
-
 function attachInputsHandlers() {
   if (inputsHandlersAttached) return;
   inputsHandlersAttached = true;
@@ -1750,7 +1651,6 @@ function attachInputsHandlers() {
   }
   attachBonusInputHandlers();
 }
-
 function toggleLangMenu(force) {
   const langMenu = $('langDropdownMenu');
   const langToggle = $('langToggle');
@@ -1759,7 +1659,6 @@ function toggleLangMenu(force) {
   langMenu.style.display = open ? 'flex' : 'none';
   langToggle.setAttribute('aria-expanded', String(open));
 }
-
 function setLangLabel(code) {
   const el = $('currentLang');
   if (!el) return;
@@ -1771,11 +1670,9 @@ function setLangLabel(code) {
   label.textContent = LANGUAGES[code] || code.toUpperCase();
   el.append(icon, label);
 }
-
 function saveLfTotals() {
   safeSet(KEYS.LF_TOTALS, JSON.stringify(lfTotals));
 }
-
 function saveLfTotalsSoon() {
   if (lfTotalsSavePending) return;
   lfTotalsSavePending = true;
@@ -1784,7 +1681,6 @@ function saveLfTotalsSoon() {
     safeSet(KEYS.LF_TOTALS, JSON.stringify(lfTotals));
   });
 }
-
 function loadLfTotals() {
   const data = safeJsonParse(safeGet(KEYS.LF_TOTALS, 'null'), null);
   if (!data || typeof data !== 'object') return;
@@ -1801,7 +1697,6 @@ function loadLfTotals() {
     });
   });
 }
-
 function collectRowData(selector) {
   return Array.from(document.querySelectorAll(selector)).map((tr) => {
     const refs = tr._refs || {};
@@ -1812,16 +1707,13 @@ function collectRowData(selector) {
     };
   });
 }
-
 function persistLfInputs() {
   safeSet(`${KEYS.LF_INPUTS_BUILD}_${currentLifeformRace}`, JSON.stringify(collectRowData('#tbodyLfBuildings tr[data-index]')));
   safeSet(`${KEYS.LF_INPUTS_RESEARCH}_${currentLifeformRace}`, JSON.stringify(collectRowData('#tbodyLfResearch tr[data-index]')));
 }
-
 function saveInputRowsFromSelector(selector, key) {
   safeSet(key, JSON.stringify(collectRowData(selector)));
 }
-
 function saveAllInputsBeforeSwitch() {
   saveInputRowsFromSelector('#tbodyBuildings tr[data-index]', KEYS.INPUTS_BUILD);
   saveInputRowsFromSelector('#tbodyResearch tr[data-index]', KEYS.INPUTS_RESEARCH);
@@ -1837,7 +1729,6 @@ function saveAllInputsBeforeSwitch() {
     if (el) safeSet(`og_calc_${id}`, el.value);
   });
 }
-
 function restoreInputRowsFromSelector(selector, key) {
   const data = safeJsonParse(safeGet(key, 'null'), null);
   if (!Array.isArray(data)) return;
@@ -1849,7 +1740,6 @@ function restoreInputRowsFromSelector(selector, key) {
     if (refs.planets) refs.planets.value = data[i].planets ? formatWithDotsRaw(data[i].planets) : '1';
   });
 }
-
 function restoreAllInputsAfterSwitch() {
   restoreInputRowsFromSelector('#tbodyBuildings tr[data-index]', KEYS.INPUTS_BUILD);
   restoreInputRowsFromSelector('#tbodyResearch tr[data-index]', KEYS.INPUTS_RESEARCH);
@@ -1875,9 +1765,7 @@ function restoreAllInputsAfterSwitch() {
     if (saved !== null && $(id)) $(id).value = String(parseNumberInput(saved));
   });
 }
-
 const getActiveTab = () => document.querySelector('.tab-btn.active')?.dataset.tab || 'buildings';
-
 function activateLfSubtab(sub, skipRecalc = false) {
   let target = sub;
   if (!document.querySelector(`.lf-subtab-btn[data-subtab="${target}"]`)) target = 'lf-buildings';
@@ -1886,7 +1774,6 @@ function activateLfSubtab(sub, skipRecalc = false) {
   $('lf-research')?.classList.toggle('active', target === 'lf-research');
   if (!skipRecalc) (target === 'lf-research' ? recalcAllLfResearch : recalcAllLfBuildings)();
 }
-
 function setActiveTab(tab, skipRecalc = false) {
   document.querySelectorAll('.tab-btn').forEach((b) => {
     const isActive = b.dataset.tab === tab;
@@ -1917,7 +1804,6 @@ function setActiveTab(tab, skipRecalc = false) {
   }
   safeSet(KEYS.ACTIVE_TAB, tab);
 }
-
 function applyLang(lang, skipRebuild = false) {
   if (!lang || !LANGUAGES[lang]) return;
   if (currentLang() === lang && !skipRebuild) return;
@@ -1950,7 +1836,6 @@ function applyLang(lang, skipRebuild = false) {
   if (typeof window.updateExpeditionsLang === 'function') window.updateExpeditionsLang();
   if (typeof window.updateHousesLang === 'function') window.updateHousesLang();
 }
-
 function initHousesSafe() {
   if (typeof window.initHousesUI === 'function') {
     window.initHousesUI();
@@ -1959,7 +1844,6 @@ function initHousesSafe() {
   }
   return false;
 }
-
 function switchView(newView) {
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === newView));
   const tableWrapper = $('tableWrapper');
@@ -1981,7 +1865,6 @@ function switchView(newView) {
   safeSet('og_calc_active_view', newView);
   updateBackgroundVideo(newView);
 }
-
 function getSumAllTabsMetalValue() {
   let total = addCapped(addCapped(addCapped(TOTALS.buildings.total, TOTALS.moonBuildings.total), TOTALS.research.total), TOTALS.fleet.total);
   Object.values(lfTotals).forEach((race) => {
@@ -1990,7 +1873,6 @@ function getSumAllTabsMetalValue() {
   });
   return total;
 }
-
 function getCurrentTotalMetalValue() {
   const active = getActiveTab();
   if (active === 'buildings') {
@@ -2006,7 +1888,6 @@ function getCurrentTotalMetalValue() {
   }
   return 0;
 }
-
 function getAggrRows() {
   if (!cachedAggrRows) {
     cachedAggrRows = {
@@ -2021,7 +1902,6 @@ function getAggrRows() {
   }
   return cachedAggrRows;
 }
-
 function updateSumAllTabsRows() {
   if (batchRecalc) return;
   const show = isSumAllTabsMode;
@@ -2053,10 +1933,8 @@ function updateSumAllTabsRows() {
   rows.points.forEach((el) => { el.textContent = formatNumberWithDots(totals.p); });
   rows.total.forEach((el) => { el.textContent = formatNumberWithDots(totalMetal); });
 }
-
 let overviewPrevTab = 'buildings';
 let overviewPrevBuildingSub = 'planet';
-
 function getLfRaceDiscounts(race) {
   const stored = (id) => parseNumberInput(safeGet('og_calc_' + id, '0'));
   if (race === 'rocktal') {
@@ -2065,7 +1943,6 @@ function getLfRaceDiscounts(race) {
   const map = { humans: 'humansLevel', mechas: 'mechasLevel', kaelesh: 'kaeleshLevel' };
   return { bld: 0, rsr: 0.0025 * stored(map[race]) };
 }
-
 function overviewStoredRows(key, dataArray, order, opts = {}) {
   const data = safeJsonParse(safeGet(key, 'null'), null);
   if (!Array.isArray(data)) return [];
@@ -2124,7 +2001,6 @@ function overviewStoredRows(key, dataArray, order, opts = {}) {
   });
   return rows;
 }
-
 function overviewLfRows(race, isBuilding) {
   const key = (isBuilding ? KEYS.LF_INPUTS_BUILD : KEYS.LF_INPUTS_RESEARCH) + '_' + race;
   const data = safeJsonParse(safeGet(key, 'null'), null);
@@ -2163,7 +2039,6 @@ function overviewLfRows(race, isBuilding) {
   }
   return rows;
 }
-
 function overviewFleetRows() {
   const qtyMap = safeJsonParse(safeGet(KEYS.SHIP_QTY, '{}'), {});
   const dict = getDict();
@@ -2185,7 +2060,6 @@ function overviewFleetRows() {
   });
   return rows;
 }
-
 function createOverviewRow(r) {
   const tr = document.createElement('tr');
   tr.className = 'overview-list-row';
@@ -2269,7 +2143,6 @@ function createOverviewRow(r) {
   tr._ov = ov;
   return tr;
 }
-
 function buildOverviewRows() {
   const tbody = $('tbodyBuildings');
   if (!tbody) return;
@@ -2299,7 +2172,6 @@ function buildOverviewRows() {
   tbody._rowsCache = null;
   ensureOverviewEditDelegation(tbody);
 }
-
 function ensureOverviewEditDelegation(tbody) {
   if (!tbody || tbody._overviewBound) return;
   tbody._overviewBound = true;
@@ -2318,7 +2190,6 @@ function ensureOverviewEditDelegation(tbody) {
     if (tr) commitOverviewEdit(tr);
   });
 }
-
 function overviewStorageKey(meta) {
   if (meta.source === 'buildings') return KEYS.INPUTS_BUILD;
   if (meta.source === 'moon') return KEYS.INPUTS_MOON_BUILD;
@@ -2329,7 +2200,6 @@ function overviewStorageKey(meta) {
   }
   return null;
 }
-
 function overviewRowCost(meta, from, to, planets) {
   let m = 0, c = 0, d = 0;
   if (meta.source === 'buildings' || meta.source === 'moon') {
@@ -2374,7 +2244,6 @@ function overviewRowCost(meta, from, to, planets) {
   }
   return { m, c, d, p: clampCalc((m + c + d) / 1000) };
 }
-
 function refreshOverviewCategoryTotals(source) {
   const tbody = $('tbodyBuildings');
   if (!tbody) return;
@@ -2392,13 +2261,12 @@ function refreshOverviewCategoryTotals(source) {
   else if (source === 'moon') TOTALS.moonBuildings = acc;
   else if (source === 'research') TOTALS.research = acc;
   else if (source === 'fleet') TOTALS.fleet = acc;
-  else if (source.startsWith('lf_')) {
+  else if (source.startsWith('lf')) {
     const parts = source.split('_');
     lfTotals[parts[1]][parts[2] === 'b' ? 'buildings' : 'research'] = acc;
     saveLfTotals();
   }
 }
-
 function commitOverviewEdit(tr) {
   const ov = tr._ov;
   if (!ov) return;
@@ -2471,7 +2339,6 @@ function commitOverviewEdit(tr) {
   refreshOverviewCategoryTotals(meta.source);
   scheduleGlobalUpdate();
 }
-
 function setOverviewMode(on) {
   isSumAllTabsMode = !!on;
   const hide = isSumAllTabsMode ? 'none' : '';
@@ -2511,7 +2378,6 @@ function setOverviewMode(on) {
   }
   updateSumAllTabsRows();
 }
-
 function updateBoxesNeeded() {
   if (batchRecalc) return;
   const boxesNeededEl = $('boxesNeeded');
@@ -2528,7 +2394,6 @@ function updateBoxesNeeded() {
   if (boxesNeededEl) boxesNeededEl.textContent = formatWithDotsRaw(Math.ceil(targetMetal / boxValue));
   updateBoxesCostTL(targetMetal);
 }
-
 function updateBoxesCostTL(targetMetal = null) {
   const boxesCostEl = $('boxesCostTL');
   if (!boxesCostEl) return;
@@ -2560,14 +2425,12 @@ function updateBoxesCostTL(targetMetal = null) {
   if (currencyEl) currencyEl.textContent = formatNumberWithDots(clampCalc(amountInBYN * targetRate));
   if (leftoverEl) leftoverEl.textContent = leftoverTM > 0 ? formatWithDotsRaw(leftoverTM) : '0';
 }
-
 function updateCurrencySymbol() {
   const el = $('currencySymbol');
   if (!el) return;
   const target = safeGet(KEYS.CURRENCY, 'BYN');
   el.textContent = CURRENCY_SYMBOLS[target] || target;
 }
-
 function updateLfBonusesVisibility(race) {
   const box = $('lfBonuses');
   if (!box) return;
@@ -2604,7 +2467,6 @@ function updateLfBonusesVisibility(race) {
   box.replaceChildren(frag);
   attachBonusInputHandlers();
 }
-
 class PanZoomController {
   constructor(wrapperId, handleId, storageKey) {
     this.wrapper = $(wrapperId);
@@ -2724,11 +2586,9 @@ class PanZoomController {
     this.handle?.removeEventListener('pointerdown', this._onPointerDown);
   }
 }
-
 let panZoomMain = null;
 let panZoomExpeditions = null;
 let panZoomHouses = null;
-
 function initPanZoom() {
   if (panZoomMain) panZoomMain.destroy();
   if (panZoomExpeditions) panZoomExpeditions.destroy();
@@ -2740,7 +2600,6 @@ function initPanZoom() {
   window.panZoomExpeditions = panZoomExpeditions;
   window.panZoomHouses = panZoomHouses;
 }
-
 function initZoomControls() {
   const getActiveController = () => {
     const expWrapper = $('expeditionsWrapper');
@@ -2760,7 +2619,6 @@ function initZoomControls() {
     getActiveController()?.reset();
   });
 }
-
 function fullResetToZero() {
   const lfSelect = $('lifeformSelect');
   const originalRace = normalizeRace(lfSelect ? lfSelect.value : 'humans');
@@ -2848,8 +2706,6 @@ function fullResetToZero() {
   switchView('costs');
   setActiveTab('buildings');
 }
-
-// ✅ ФИКС: статичная фоновая картинка для режима производительности
 function updateBackgroundImage(view) {
   const bgImage = $('bgImage');
   if (!bgImage) return;
@@ -2858,14 +2714,13 @@ function updateBackgroundImage(view) {
     : 'images/background.jpg';
   bgImage.style.backgroundImage = `url("${src}")`;
 }
-
 function updateBackgroundVideo(view) {
   const bgVideo = $('bgVideo');
   if (!bgVideo) return;
   if (isPerfMode()) {
     bgVideo.pause();
     bgVideo.style.display = 'none';
-    updateBackgroundImage(view);  // ✅ ФИКС: в режиме производительности ставим картинку
+    updateBackgroundImage(view);
     return;
   }
   if (bgVideo.style.display === 'none') bgVideo.style.display = '';
@@ -2882,7 +2737,6 @@ function updateBackgroundVideo(view) {
     });
   }
 }
-
 function loadSettings() {
   const data = safeJsonParse(safeGet(SETTINGS_KEY, 'null'), null);
   if (!data) {
@@ -2902,11 +2756,9 @@ function loadSettings() {
     }
   };
 }
-
 function saveSettings() {
   safeSet(SETTINGS_KEY, JSON.stringify(currentSettings));
 }
-
 function applySettingsToConfig() {
   CONFIG.TM_PER_BOX = Math.round(currentSettings.tmPerBox);
   CONFIG.TRY_TO_BYN_RATE = currentSettings.rates.TRY || 16.01;
@@ -2916,7 +2768,6 @@ function applySettingsToConfig() {
     CONFIG.TM_PACKS[0].priceTRY = Math.round(currentSettings.packPriceTRY);
   }
 }
-
 function populateSettingsInputs() {
   const setVal = (id, val, isDecimal = false) => {
     const el = $(id);
@@ -2938,7 +2789,6 @@ function populateSettingsInputs() {
   setVal('cfgRateEUR', currentSettings.rates.EUR, true);
   setVal('cfgRateTRY', currentSettings.rates.TRY, true);
 }
-
 function readSettingsFromInputs() {
   currentSettings.tmPerBox = parseSettingsNumber($('cfgTmPerBox')?.value, DEFAULT_SETTINGS.tmPerBox);
   currentSettings.tmPackSize = parseSettingsNumber($('cfgTmPackSize')?.value, DEFAULT_SETTINGS.tmPackSize);
@@ -2949,24 +2799,19 @@ function readSettingsFromInputs() {
   currentSettings.rates.TRY = parseSettingsNumber($('cfgRateTRY')?.value, DEFAULT_SETTINGS.rates.TRY);
   currentSettings.rates.BYN = 1;
 }
-
 function openSettingsModal() {
   const modal = $('settingsModal');
   if (!modal) return;
   populateSettingsInputs();
-  const perfToggle = $('cfgPerfMode');
-  if (perfToggle) perfToggle.checked = isPerfMode();
   modal.classList.add('open');
   $('settingsToggle')?.classList.add('active');
 }
-
 function closeSettingsModal() {
   const modal = $('settingsModal');
   if (!modal) return;
   modal.classList.remove('open');
   $('settingsToggle')?.classList.remove('active');
 }
-
 function saveAndApplySettings() {
   readSettingsFromInputs();
   saveSettings();
@@ -2975,12 +2820,10 @@ function saveAndApplySettings() {
   scheduleGlobalUpdate();
   closeSettingsModal();
 }
-
 function resetSettingsToDefaults() {
   currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   populateSettingsInputs();
 }
-
 const PERF_LABELS = {
   en: { section: 'Performance', mode: 'Performance mode' },
   ru: { section: 'Производительность', mode: 'Режим производительности' },
@@ -2995,14 +2838,10 @@ const PERF_LABELS = {
   pt: { section: 'Desempenho', mode: 'Modo de desempenho' },
   bs: { section: 'Performanse', mode: 'Režim performansi' }
 };
-
 const isPerfMode = () => safeGet(PERF_KEY, '0') === '1';
-
-// ✅ ФИКС: обновлённая функция — в режиме производительности показываем картинку
 function applyPerfMode(on) {
   const enabled = !!on;
   document.documentElement.classList.toggle('perf-mode', enabled);
-
   const view = safeGet('og_calc_active_view', 'costs');
   const bgVideo = $('bgVideo');
   if (bgVideo) {
@@ -3014,66 +2853,44 @@ function applyPerfMode(on) {
       updateBackgroundVideo(view);
     }
   }
-  updateBackgroundImage(view);  // ✅ картинка всегда актуальна для текущей вкладки
+  updateBackgroundImage(view);
 }
-
 function setPerfMode(on) {
   safeSet(PERF_KEY, on ? '1' : '0');
   applyPerfMode(on);
-  const t = $('cfgPerfMode');
-  if (t) t.checked = !!on;
+  updatePerfSwitchUI();
 }
-
+function updatePerfSwitchUI() {
+  const input = $('cfgPerfMode');
+  if (!input) return;
+  const on = isPerfMode();
+  if (input.checked !== on) input.checked = on;
+  const text = $('perfSwitchText');
+  if (text) text.textContent = on ? 'ON' : 'OFF';
+}
 function updatePerfToggleLang() {
-  const legend = $('perfSectionLegend');
-  const label = $('perfModeLabel');
-  if (!legend && !label) return;
+  const label = $('perfSwitchLabel');
+  if (!label) return;
   const dict = getDict();
   const fb = PERF_LABELS[currentLang()] || PERF_LABELS.ru;
-  if (legend) legend.textContent = normalizeLocalizedText(dict.settingsPerfSection || fb.section);
-  if (label) label.textContent = normalizeLocalizedText(dict.settingsPerfMode || fb.mode);
+  const text = normalizeLocalizedText(dict.settingsPerfMode || fb.mode);
+  label.title = text;
+  const input = $('cfgPerfMode');
+  if (input) input.setAttribute('aria-label', text);
 }
-
-function ensurePerfToggle(modal) {
-  if (!modal || $('cfgPerfMode')) return;
-  const body = modal.querySelector('.settings-modal__body');
-  if (!body) return;
-  const section = document.createElement('fieldset');
-  section.className = 'settings-modal__section';
-  const legend = document.createElement('legend');
-  legend.id = 'perfSectionLegend';
-  const row = document.createElement('div');
-  row.className = 'settings-modal__row';
-  const label = document.createElement('label');
-  label.className = 'sum-toggle';
-  label.htmlFor = 'cfgPerfMode';
-  const input = document.createElement('input');
-  input.type = 'checkbox';
-  input.id = 'cfgPerfMode';
-  const check = document.createElement('span');
-  check.className = 'ui-check';
-  const text = document.createElement('span');
-  text.id = 'perfModeLabel';
-  label.append(input, check, text);
-  row.appendChild(label);
-  section.append(legend, row);
-  body.prepend(section);
-  updatePerfToggleLang();
-}
-
 function initSettingsPanel() {
   const toggleBtn = $('settingsToggle');
   const modal = $('settingsModal');
   if (modal) {
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    ensurePerfToggle(modal);
   }
   const perfToggle = $('cfgPerfMode');
   if (perfToggle) {
-    perfToggle.checked = isPerfMode();
     perfToggle.addEventListener('change', (e) => setPerfMode(e.target.checked));
   }
+  updatePerfSwitchUI();
+  updatePerfToggleLang();
   if (toggleBtn) {
     toggleBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3091,7 +2908,6 @@ function initSettingsPanel() {
   loadSettings();
   applySettingsToConfig();
 }
-
 function restoreFromStorage() {
   RACES.forEach((race) => {
     migrateKey(`og_calc_inputs_research_v1_${race}`, `${KEYS.LF_INPUTS_RESEARCH}_${race}`);
@@ -3115,7 +2931,6 @@ function restoreFromStorage() {
   }
   updateSumAllTabsRows();
 }
-
 function initApp() {
   applyPerfMode(isPerfMode());
   initSettingsPanel();
@@ -3188,7 +3003,6 @@ function initApp() {
   const sumCheckbox = $('sumAllTabsCheckbox');
   if (sumCheckbox && sumCheckbox.checked) setOverviewMode(true);
 }
-
 if (document.readyState !== 'loading') initApp();
 else document.addEventListener('DOMContentLoaded', initApp);
 })();
