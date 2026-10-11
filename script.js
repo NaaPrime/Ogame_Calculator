@@ -2204,16 +2204,18 @@ frag.appendChild(tr);
 } else {
 rows.forEach((r) => frag.appendChild(createOverviewRow(r)));
 }
-const d2 = getDict();
-const trSum = document.createElement('tr');
-trSum.className = 'sum-all-tabs-row';
-trSum.innerHTML = `<td class="sum-label">${normalizeLocalizedText(d2.sumAllTabs || '')}</td><td></td><td></td><td></td><td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td><td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td><td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td><td class="p"><span class="sum-all-tabs-points">0</span></td>`;
-frag.appendChild(trSum);
-const trTot = document.createElement('tr');
-trTot.className = 'sum-all-tabs-total-row';
-trTot.innerHTML = `<td class="sum-label">${normalizeLocalizedText(d2.totalInMetal || '')}</td><td></td><td></td><td></td><td class="m" colspan="3"><span class="sum-all-tabs-total">0</span></td><td class="p"></td>`;
-frag.appendChild(trTot);
-tbody.replaceChildren(frag);
+const sumRow = tbody.querySelector('.sum-all-tabs-row');
+const totalRow = tbody.querySelector('.sum-all-tabs-total-row');
+Array.from(tbody.children).forEach((tr) => {
+if (tr !== sumRow && tr !== totalRow) {
+tr.remove();
+}
+});
+if (sumRow) {
+tbody.insertBefore(frag, sumRow);
+} else {
+tbody.appendChild(frag);
+}
 tbody._rowsCache = null;
 cachedAggrRows = null;
 ensureOverviewEditDelegation(tbody);
