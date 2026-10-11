@@ -12,7 +12,7 @@ MAX_LEVEL: 99,
 TM_PER_LEVEL_FACTOR: 2,
 TM_INPUT_PLACEHOLDER: '72810'
 };
-const CURRENCY_SYMBOLS = { BYN: 'Br', RUB: '₽', USD: '$', EUR: '€', TRY: '₺' };
+const CURRENCY_SYMBOLS = { BYN: 'Br', RUB: '₽', USD: '$', EUR: '€', TRY: '' };
 const KEYS = {
 LANG: 'og_calc_lang_v2',
 TRANSFORM: 'og_calc_transform_v2',
@@ -2661,17 +2661,100 @@ return window.panZoomMain;
 $('globalZoomIn')?.addEventListener('click', () => getActiveController()?.zoom(1.15));
 $('globalZoomOut')?.addEventListener('click', () => getActiveController()?.zoom(1 / 1.15));
 $('globalZoomReset')?.addEventListener('click', () => {
+const expWrapper = $('expeditionsWrapper');
+const housesWrapper = $('housesWrapper');
+const isExp = expWrapper && expWrapper.style.display !== 'none';
+const isHouses = housesWrapper && housesWrapper.style.display !== 'none';
+if (!isExp && !isHouses) fullResetToZero();
 getActiveController()?.reset();
 });
 }
 function fullResetToZero() {
-const preserved = [KEYS.LANG, SETTINGS_KEY, PERF_KEY];
+const lfSelect = $('lifeformSelect');
+const originalRace = normalizeRace(lfSelect ? lfSelect.value : 'humans');
+isSumAllTabsMode = false;
+const checkbox = $('sumAllTabsCheckbox');
+if (checkbox) checkbox.checked = false;
+setOverviewMode(false);
+const preservedKeys = [KEYS.LANG, SETTINGS_KEY, PERF_KEY];
+Object.values(KEYS).forEach((k) => {
+if (!preservedKeys.includes(k)) safeRemove(k);
+});
+['og_calc_active_view', 'og_calc_active_building_tab', 'og_calc_active_lf_subtab_v1', 'options_expeditions', 'og_expeditions_accordion_expanded', 'og_calc_expeditions_transform', 'og_calc_houses_race', 'og_calc_houses_transform'].forEach((k) => {
+safeRemove(k);
+});
 try {
 Object.keys(localStorage)
-.filter((k) => (k.startsWith('og_calc') || k.startsWith('og_expeditions') || k === 'options_expeditions') && !preserved.includes(k))
+.filter((k) => k.startsWith('og_calc_lf_inputs') || BONUS_INPUT_IDS.some((id) => k === `og_calc_${id}`))
 .forEach((k) => localStorage.removeItem(k));
 } catch (e) {}
-location.reload();
+researchDiscounts = {};
+transportCapacities = { ...TRANSPORT_DEFAULTS };
+saveTransportCapacities();
+lfTotals = freshLfTotals();
+TOTALS.buildings = emptyTotals();
+TOTALS.moonBuildings = emptyTotals();
+TOTALS.research = emptyTotals();
+TOTALS.fleet = emptyTotals();
+const boxValueEl = $('boxValue');
+if (boxValueEl) boxValueEl.value = '';
+const tmInputEl = $('tmInput');
+if (tmInputEl) tmInputEl.value = '';
+['#tbodyBuildings', '#tbodyResearch', '#tbodyMoonBuildings'].forEach((sel) => {
+document.querySelectorAll(`${sel} input[data-type="from"],${sel} input[data-type="to"]`).forEach((inp) => { inp.value = ''; });
+document.querySelectorAll(`${sel} input[data-type="planets"],${sel} input[data-type="moons"]`).forEach((inp) => { inp.value = '1'; });
+});
+RACES.forEach((race) => {
+currentLifeformRace = race;
+calcCache.clear();
+buildRowsLfBuildings();
+buildRowsLfResearch();
+document.querySelectorAll('#tbodyLfBuildings input[data-type="from"],#tbodyLfBuildings input[data-type="to"],#tbodyLfResearch input[data-type="from"],#tbodyLfResearch input[data-type="to"]').forEach((inp) => { inp.value = ''; });
+document.querySelectorAll('#tbodyLfBuildings input[data-type="planets"],#tbodyLfResearch input[data-type="planets"]').forEach((inp) => { inp.value = '1'; });
+saveInputRowsFromSelector('#tbodyLfBuildings tr[data-index]', `${KEYS.LF_INPUTS_BUILD}_${race}`);
+saveInputRowsFromSelector('#tbodyLfResearch tr[data-index]', `${KEYS.LF_INPUTS_RESEARCH}_${race}`);
+recalcAllLfBuildings();
+recalcAllLfResearch();
+});
+currentLifeformRace = originalRace;
+if (lfSelect) lfSelect.value = originalRace;
+safeSet(KEYS.LF_RACE, originalRace);
+safeSet(KEYS.BASE_CURRENCY, 'TRY');
+safeSet(KEYS.CURRENCY, 'BYN');
+const baseCurrencySelector = $('baseCurrencySelector');
+if (baseCurrencySelector) baseCurrencySelector.value = 'TRY';
+const currencySelector = $('currencySelector');
+if (currencySelector) currencySelector.value = 'BYN';
+updateCurrencySymbol();
+fleetTableBuilt = false;
+calcCache.clear();
+buildRowsBuildings();
+buildRowsResearch();
+buildRowsMoonBuildings();
+buildRowsLfBuildings();
+buildRowsLfResearch();
+renderTable();
+recalcAll();
+updateLfBonusesVisibility(currentLifeformRace);
+['sumPointsB', 'sumPointsR', 'sumPointsLfB', 'sumPointsLfR'].forEach((id) => {
+const el = $(id);
+if (el) el.textContent = '0';
+});
+const boxesNeeded = $('boxesNeeded');
+if (boxesNeeded) boxesNeeded.textContent = '—';
+const boxesCost = $('boxesCostTL');
+if (boxesCost) boxesCost.textContent = '—';
+const leftover = $('leftoverTmValue');
+if (leftover) leftover.textContent = '—';
+const currencyValue = $('currencyValue');
+if (currencyValue) currencyValue.textContent = '0';
+if (typeof window.clearFleet === 'function') window.clearFleet();
+if (typeof window.updateExpeditionsLang === 'function') window.updateExpeditionsLang();
+if (typeof window.updateHousesLang === 'function') window.updateHousesLang();
+scheduleGlobalUpdate();
+saveLfTotals();
+switchView('costs');
+setActiveTab('buildings');
 }
 function updateBackgroundImage(view) {
 const bgImage = $('bgImage');
@@ -2790,6 +2873,10 @@ closeSettingsModal();
 function resetSettingsToDefaults() {
 currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 populateSettingsInputs();
+saveSettings();
+applySettingsToConfig();
+fullResetToZero();
+closeSettingsModal();
 }
 const PERF_LABELS = {
 en: { mode: 'Performance mode' },
@@ -2858,18 +2945,6 @@ perfToggle.addEventListener('change', (e) => setPerfMode(e.target.checked));
 }
 updatePerfSwitchUI();
 updatePerfToggleLang();
-const footer = document.querySelector('.settings-modal__footer');
-if (footer && !$('settingsFullReset')) {
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.id = 'settingsFullReset';
-btn.className = 'settings-modal__btn settings-modal__btn--reset';
-btn.textContent = normalizeLocalizedText(getDict().settingsFullReset || 'Full reset');
-btn.addEventListener('click', () => {
-if (window.confirm(normalizeLocalizedText(getDict().confirmFullReset || 'Delete all calculator data?'))) fullResetToZero();
-});
-footer.prepend(btn);
-}
 if (toggleBtn) {
 toggleBtn.addEventListener('click', (e) => {
 e.stopPropagation();
