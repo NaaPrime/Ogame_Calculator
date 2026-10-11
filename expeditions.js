@@ -3,7 +3,6 @@
 const LANG_KEY = 'og_calc_lang_v2';
 const STORAGE_KEY = 'options_expeditions';
 const ACCORDION_KEY = 'og_expeditions_accordion_expanded';
-const ACTIVE_VIEW_KEY = 'og_calc_active_view';
 const SHIPS = [
 ['small-cargo', 5000, 'SC'],
 ['large-cargo', 25000, 'LC'],
@@ -77,7 +76,7 @@ const cleanDecimal = (value) => {
 let s = String(value ?? '').replace(',', '.').replace(/[^0-9.]/g, '');
 const dot = s.indexOf('.');
 if (dot !== -1) {
-s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/./g, '');
+s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
 }
 return s;
 };
@@ -138,7 +137,7 @@ Object.assign(this.prm, saved);
 if (!Array.isArray(this.prm.lfShipsBonuses) || this.prm.lfShipsBonuses.length !== LF_BONUS_COUNT) {
 this.prm.lfShipsBonuses = Array(LF_BONUS_COUNT).fill(0);
 } else {
-this.prm.lfShipsBonuses = this.prm.lfShipsBonuses.map(v => Math.max(0, parseFloat(v) || 0));
+this.prm.lfShipsBonuses = this.prm.lfShipsBonuses.map((v) => Math.max(0, parseFloat(v) || 0));
 }
 if (!Number.isInteger(this.prm.highTopIndex) || this.prm.highTopIndex < 0 || this.prm.highTopIndex >= HIGH_TOP_VALUES.length) {
 this.prm.highTopIndex = 0;
@@ -176,7 +175,7 @@ const els = {};
 let lfBonusInputs = [];
 const byId = (id) => document.getElementById(id);
 function cacheElements() {
-SHIPS.forEach(ship => {
+SHIPS.forEach((ship) => {
 els['num' + ship[2]] = byId('num' + ship[2]);
 els['can' + ship[2]] = byId('can' + ship[2]);
 els['find' + ship[2]] = byId('find' + ship[2]);
@@ -187,7 +186,7 @@ els['find' + ship[2]] = byId('find' + ship[2]);
 'class-bonus-collector', 'class-bonus-discoverer', 'dark-matter-discovery-bonus',
 'max_points', 'storageCapacity', 'maxFindMet', 'maxFindCry', 'maxFindDeu',
 'darkMatterFind', 'expeditionsFleetBody', 'clearFleet', 'lf-ships-bonuses'
-].forEach(id => { els[id] = byId(id); });
+].forEach((id) => { els[id] = byId(id); });
 }
 function cacheLfBonusInputs() {
 lfBonusInputs = Array.from(document.querySelectorAll('#lf-ships-bonuses input'));
@@ -206,15 +205,19 @@ const dict = getLang();
 return normalizeText(dict['ship_' + shipKey.replace(/-/g, '_')] || shipKey.replace(/-/g, ' '));
 };
 const getShipAbbreviation = (abbr) => {
-const ship = SHIPS.find(s => s[2] === abbr);
+const ship = SHIPS.find((s) => s[2] === abbr);
 if (!ship) return abbr;
 return getShipName(ship[0]);
 };
 const createShipIcon = (src, alt, size = 32) => {
 if (window.makeIcon) return window.makeIcon(src, alt, size);
 const img = document.createElement('img');
-img.src = src; img.alt = alt; img.className = 'icon';
-img.width = size; img.height = size; img.loading = 'lazy';
+img.src = src;
+img.alt = alt;
+img.className = 'icon';
+img.width = size;
+img.height = size;
+img.loading = 'lazy';
 img.style.cssText = `border-radius:4px;vertical-align:middle;width:${size}px;height:${size}px;`;
 img.addEventListener('error', function handler() {
 img.removeEventListener('error', handler);
@@ -227,6 +230,26 @@ if (img.parentNode) img.parentNode.insertBefore(fb, img.nextSibling);
 }, { once: true });
 return img;
 };
+function makeNameCell(cls, extraStyle, iconSrc, name) {
+const td = document.createElement('td');
+if (cls) td.className = cls;
+if (extraStyle) td.style.cssText = extraStyle;
+const wrap = document.createElement('span');
+wrap.style.cssText = 'display:inline-flex;align-items:center;gap:8px;';
+wrap.appendChild(createShipIcon(iconSrc, name, 32));
+wrap.appendChild(document.createTextNode(name));
+td.appendChild(wrap);
+return td;
+}
+function setNameText(cell, name) {
+const wrap = cell && cell.firstElementChild;
+if (!wrap) return;
+wrap.childNodes.forEach((node) => {
+if (node.nodeType === Node.TEXT_NODE) node.textContent = name;
+});
+const img = wrap.querySelector('img');
+if (img) img.alt = name;
+}
 const cargoCache = { key: null, single: new Map() };
 function unitCapacity(idx) {
 const p = state.prm;
@@ -255,7 +278,7 @@ cargoCache.single.clear();
 }
 if (abbr) {
 if (cargoCache.single.has(abbr)) return cargoCache.single.get(abbr);
-const idx = SHIPS.findIndex(s => s[2] === abbr);
+const idx = SHIPS.findIndex((s) => s[2] === abbr);
 if (idx === -1) return 0;
 const cap = unitCapacity(idx);
 cargoCache.single.set(abbr, cap);
@@ -275,7 +298,7 @@ state.prm.lfShipsBonuses = Array(LF_BONUS_COUNT).fill(0);
 }
 function readLfShipBonuses() {
 ensureLfShipBonuses();
-lfBonusInputs.forEach(inp => {
+lfBonusInputs.forEach((inp) => {
 const idx = parseInt(inp.dataset.index, 10);
 if (!Number.isInteger(idx) || idx < 0 || idx >= LF_BONUS_COUNT) return;
 const value = Math.max(0, parseFloat(inp.value) || 0);
@@ -315,7 +338,8 @@ if (e.value === str) return;
 for (let i = 0; i < e.options.length; i++) {
 const opt = e.options[i];
 if (opt.value === str || parseInt(opt.value, 10) === val || parseInt(opt.textContent, 10) === val) {
-e.selectedIndex = i; return;
+e.selectedIndex = i;
+return;
 }
 }
 if (Number.isInteger(fallbackIndex) && fallbackIndex >= 0 && fallbackIndex < e.options.length) {
@@ -341,14 +365,14 @@ setTextInput('class-bonus-collector', fmtPct(p.classBonusCollector));
 setTextInput('class-bonus-discoverer', fmtPct(p.classBonusDiscoverer));
 setTextInput('dark-matter-discovery-bonus', fmtPct(p.darkMatterDiscoveryBonus));
 ensureLfShipBonuses();
-lfBonusInputs.forEach(inp => {
+lfBonusInputs.forEach((inp) => {
 const idx = parseInt(inp.dataset.index, 10);
 if (!Number.isInteger(idx) || idx < 0 || idx >= LF_BONUS_COUNT) return;
 if (p.lfShipsBonuses[idx] > 0) inp.value = p.lfShipsBonuses[idx];
 });
 };
 const clearFleet = () => {
-SHIPS.forEach(ship => {
+SHIPS.forEach((ship) => {
 const input = els['num' + ship[2]];
 if (input) input.value = '';
 });
@@ -470,13 +494,13 @@ input.value = cleanDecimal(input.value);
 function ensureBonusPanelDelegation(container) {
 if (!container || container._bound) return;
 container._bound = true;
-container.addEventListener('input', e => {
+container.addEventListener('input', (e) => {
 const input = e.target;
 if (!input.matches('.lf-bonus-input')) return;
 sanitizeDecimalInput(input);
 computeDebounced();
 });
-container.addEventListener('focusout', e => {
+container.addEventListener('focusout', (e) => {
 const input = e.target;
 if (!input.matches('.lf-bonus-input')) return;
 const idx = parseInt(input.dataset.index, 10);
@@ -501,14 +525,7 @@ BONUSES_ORDER.forEach((shipIdx, row) => {
 const tr = rows[row];
 if (!tr || !SHIPS[shipIdx]) return;
 const name = getShipName(SHIPS[shipIdx][0]);
-const nameCell = tr.querySelector('td');
-if (nameCell) {
-nameCell.childNodes.forEach(node => {
-if (node.nodeType === Node.TEXT_NODE) node.textContent = name;
-});
-const img = nameCell.querySelector('img');
-if (img) img.alt = name;
-}
+setNameText(tr.querySelector('td'), name);
 const input = tr.querySelector('input');
 if (input) input.setAttribute('aria-label', name + ' bonus');
 });
@@ -528,20 +545,17 @@ readLfShipBonuses();
 }
 const dict = getLang();
 container.innerHTML =
-`<table><thead><tr>` +
-`<th style="text-align:left;padding:2px 4px;">${normalizeText(dict.shipType || 'Ship Type')}</th>` +
-`<th style="text-align:center;padding:2px 4px;">${normalizeText(dict.expeditionsCargoCapacity || 'Storage Capacity')}</th>` +
-`</tr></thead><tbody></tbody></table>`;
+'<table><thead><tr>' +
+'<th style="text-align:left;padding:2px 4px;">' + normalizeText(dict.shipType || 'Ship Type') + '</th>' +
+'<th style="text-align:center;padding:2px 4px;">' + normalizeText(dict.expeditionsCargoCapacity || 'Storage Capacity') + '</th>' +
+'</tr></thead><tbody></tbody></table>';
 const tbody = container.querySelector('tbody');
 const frag = document.createDocumentFragment();
 BONUSES_ORDER.forEach((shipIdx, row) => {
 const ship = SHIPS[shipIdx];
 const tr = document.createElement('tr');
 tr.className = row % 2 === 0 ? 'odd' : 'even';
-const nameCell = document.createElement('td');
-nameCell.style.cssText = 'text-align:left;padding:2px 4px;display:flex;align-items:center;gap:8px;';
-nameCell.appendChild(createShipIcon(`images/ships/${SHIP_IMAGE_MAP[ship[0]]}`, getShipName(ship[0]), 32));
-nameCell.appendChild(document.createTextNode(getShipName(ship[0])));
+const nameCell = makeNameCell(null, 'text-align:left;padding:2px 4px;', `images/ships/${SHIP_IMAGE_MAP[ship[0]]}`, getShipName(ship[0]));
 const bonusCell = document.createElement('td');
 bonusCell.style.cssText = 'text-align:center;padding:2px 4px;';
 const input = document.createElement('input');
@@ -560,13 +574,13 @@ cacheLfBonusInputs();
 function ensureFleetTableDelegation(tbody) {
 if (!tbody || tbody._bound) return;
 tbody._bound = true;
-tbody.addEventListener('input', e => {
+tbody.addEventListener('input', (e) => {
 const input = e.target;
 if (!input.matches('.quantity-input')) return;
 input.value = input.value.replace(/[^0-9]/g, '').slice(0, 9);
 computeDebounced();
 });
-tbody.addEventListener('focusout', e => {
+tbody.addEventListener('focusout', (e) => {
 const input = e.target;
 if (!input.matches('.quantity-input')) return;
 validateAndFormatInput(input);
@@ -577,7 +591,11 @@ let tableInitAttempts = 0;
 function initExpeditionsTable() {
 const tbody = byId('expeditionsFleetBody');
 if (!tbody) {
-if (++tableInitAttempts < 20) setTimeout(initExpeditionsTable, 100);
+if (++tableInitAttempts < 20) {
+setTimeout(initExpeditionsTable, 100);
+} else {
+console.warn('[expeditions] fleet table not found');
+}
 return;
 }
 tableInitAttempts = 0;
@@ -589,11 +607,7 @@ const frag = document.createDocumentFragment();
 SHIPS.forEach((ship, i) => {
 const tr = document.createElement('tr');
 tr.className = i % 2 === 0 ? 'odd' : 'even';
-const nameCell = document.createElement('td');
-nameCell.className = 'first-column';
-nameCell.style.cssText = 'display:flex;align-items:center;gap:8px;';
-nameCell.appendChild(createShipIcon(`images/ships/${SHIP_IMAGE_MAP[ship[0]]}`, getShipName(ship[0]), 32));
-nameCell.appendChild(document.createTextNode(getShipName(ship[0])));
+const nameCell = makeNameCell('first-column', '', `images/ships/${SHIP_IMAGE_MAP[ship[0]]}`, getShipName(ship[0]));
 const qtyCell = document.createElement('td');
 qtyCell.style.cssText = 'text-align:center;';
 qtyCell.className = 'quantity-cell';
@@ -626,20 +640,20 @@ const capRow = document.createElement('tr');
 capRow.className = 'storage-row';
 capRow.innerHTML =
 `<td colspan="2">${normalizeText(dict.expeditionsCargoCapacity || 'Storage Capacity:')}</td>` +
-`<td colspan="2" style="text-align:right;"><span id="storageCapacity">0</span></td>`;
+'<td colspan="2" style="text-align:right;"><span id="storageCapacity">0</span></td>';
 tbody.appendChild(capRow);
 const resRow = document.createElement('tr');
 resRow.className = 'resources-row';
 resRow.innerHTML =
 `<td colspan="2">${normalizeText(dict.expeditionsMaxResourcesLabel || 'Resource find (max):')}</td>` +
 `<td style="text-align:right;">${normalizeText(dict.metal || 'Metal')}<br>${normalizeText(dict.crystal || 'Crystal')}<br>${normalizeText(dict.deut || 'Deuterium')}</td>` +
-`<td style="text-align:right;"><span id="maxFindMet">0</span><br><span id="maxFindCry">0</span><br><span id="maxFindDeu">0</span></td>`;
+'<td style="text-align:right;"><span id="maxFindMet">0</span><br><span id="maxFindCry">0</span><br><span id="maxFindDeu">0</span></td>';
 tbody.appendChild(resRow);
 const dmRow = document.createElement('tr');
 dmRow.className = 'dark-matter-row';
 dmRow.innerHTML =
 `<td colspan="2">${normalizeText(dict.expeditionsDarkMatterFindLabel || 'Dark Matter find (max):')}</td>` +
-`<td colspan="2" style="text-align:right;"><span id="darkMatterFind">0</span></td>`;
+'<td colspan="2" style="text-align:right;"><span id="darkMatterFind">0</span></td>';
 tbody.appendChild(dmRow);
 }
 ensureFleetTableDelegation(tbody);
@@ -653,7 +667,7 @@ function bindClearButton() {
 const clearBtn = byId('clearFleet');
 if (clearBtn && !clearBtn._bound) {
 clearBtn._bound = true;
-clearBtn.addEventListener('click', e => {
+clearBtn.addEventListener('click', (e) => {
 e.preventDefault();
 e.stopPropagation();
 clearFleet();
@@ -683,7 +697,7 @@ const icon = newHeader.querySelector('.ui-icon');
 if (icon) icon.className = `ui-icon ui-icon-triangle-1-${isExpanded ? 's' : 'e'}`;
 }
 function bindEvents() {
-['player-class', 'universe-speed', 'highTop', 'resource-discovery-booster'].forEach(id => {
+['player-class', 'universe-speed', 'highTop', 'resource-discovery-booster'].forEach((id) => {
 const e = els[id];
 if (e) e.addEventListener('change', computeDebounced);
 });
@@ -692,7 +706,7 @@ if (e) e.addEventListener('change', computeDebounced);
 'percent-resources', 'percent-ships',
 'class-bonus-collector', 'class-bonus-discoverer',
 'dark-matter-discovery-bonus'
-].forEach(id => {
+].forEach((id) => {
 const e = els[id];
 if (!e) return;
 e.addEventListener('input', function () {
@@ -786,12 +800,7 @@ if (headers[3] && dict.maxCanBeFound) headers[3].textContent = normalizeText(dic
 }
 document.querySelectorAll('#expeditionsFleetBody .first-column').forEach((cell, i) => {
 if (!SHIPS[i]) return;
-const name = getShipName(SHIPS[i][0]);
-cell.childNodes.forEach(node => {
-if (node.nodeType === Node.TEXT_NODE) node.textContent = name;
-});
-const img = cell.querySelector('img');
-if (img) img.alt = name;
+setNameText(cell, getShipName(SHIPS[i][0]));
 });
 initBonusesPanel();
 const storageRow = document.querySelector('.storage-row td:first-child');
@@ -800,10 +809,6 @@ const resourceRow = document.querySelector('.resources-row td:first-child');
 if (resourceRow) resourceRow.textContent = normalizeText(dict.expeditionsMaxResourcesLabel || 'Resource find (max):');
 const darkMatterRow = document.querySelector('.dark-matter-row td:first-child');
 if (darkMatterRow) darkMatterRow.textContent = normalizeText(dict.expeditionsDarkMatterFindLabel || 'Dark Matter find (max):');
-}
-function onLanguageChanged() {
-updateExpeditionsLang();
-computeDebounced();
 }
 let isExpeditionsInit = false;
 function initExpeditionUI() {
@@ -819,13 +824,10 @@ initAccordion();
 bindEvents();
 updateExpeditionsLang();
 compute();
-document.removeEventListener('languageChanged', onLanguageChanged);
-document.addEventListener('languageChanged', onLanguageChanged);
 }
 window.initExpeditionUI = initExpeditionUI;
 window.updateExpeditionsLang = updateExpeditionsLang;
 window.clearFleet = clearFleet;
-window.compute = compute;
 document.addEventListener('visibilitychange', () => {
 if (document.hidden) {
 if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }

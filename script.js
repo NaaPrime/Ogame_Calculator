@@ -250,6 +250,7 @@ let fleetInputs = [];
 let fleetSummaryCells = {};
 let fleetTableBuilt = false;
 let cachedAggrRows = null;
+let transportRowsCache = null;
 let isSumAllTabsMode = false;
 let currentLifeformRace = 'humans';
 let batchRecalc = false;
@@ -300,12 +301,18 @@ function formatWithDotsRaw(input) {
 const digits = String(input ?? '').replace(/[^0-9]/g, '');
 return digits ? Number(digits).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
 }
+const fmtCache = new Map();
 function formatNumberWithDots(n) {
 if (n === null || n === undefined || Number.isNaN(n)) return '0';
 const value = Math.round(Number(n) || 0);
 if (!Number.isFinite(value)) return '∞';
+const hit = fmtCache.get(value);
+if (hit !== undefined) return hit;
 const abs = Math.abs(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-return value < 0 ? '-' + abs : abs;
+const res = value < 0 ? '-' + abs : abs;
+if (fmtCache.size > 4096) fmtCache.clear();
+fmtCache.set(value, res);
+return res;
 }
 function parseNumberInput(s) {
 if (s === null || s === undefined) return 0;
@@ -717,6 +724,7 @@ actualCols = Array.from(headRow.cells).reduce((n, c) => n + (c.colSpan || 1), 0)
 const parent = totalRow.parentNode;
 parent.appendChild(createTransportNeededRow('large_cargo', dict, actualCols, source));
 parent.appendChild(createTransportNeededRow('small_cargo', dict, actualCols, source));
+transportRowsCache = null;
 }
 function openTransportCapacityEditor(tr, shipId) {
 if (!tr || tr._transportEditor) return;
@@ -796,8 +804,9 @@ else if (source === 'lfResearch') t = lfTotals[currentLifeformRace].research;
 else t = TOTALS[source] || emptyTotals();
 return addCapped(addCapped(t.m, t.c), t.d);
 }
+const getTransportRows = () => transportRowsCache || (transportRowsCache = Array.from(document.querySelectorAll('.transport-needed-row')));
 function updateTransportNeededRows() {
-document.querySelectorAll('.transport-needed-row').forEach((tr) => {
+getTransportRows().forEach((tr) => {
 const shipId = tr.dataset.transport;
 const refs = tr._transportRefs;
 if (!refs || !shipId) return;
@@ -842,6 +851,7 @@ planetsType: 'planets'
 });
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalB', getDict(), 8, 'buildings');
 }
@@ -864,6 +874,7 @@ showPlanets: false
 const chip = document.createElement('span');
 chip.className = 'disc-chip';
 chip.dataset.hint = hint;
+chip.dataset.label = '';
 chip.title = hint;
 tr._refs.chip = chip;
 tr.children[0].appendChild(chip);
@@ -880,6 +891,7 @@ frag.appendChild(tr);
 });
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalR', dict, 7, 'research');
 }
@@ -955,6 +967,7 @@ planetsType: 'moons'
 });
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalMoon', dict, 8, 'moonBuildings');
 }
@@ -978,6 +991,7 @@ planetsType: 'planets'
 }
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalLfB', dict, 8, 'lfBuildings');
 }
@@ -1001,6 +1015,7 @@ planetsType: 'planets'
 }
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 attachLvlInputHandlers();
 insertTransportRowsAfterTotal('sumTotalMetalLfR', dict, 8, 'lfResearch');
 }
@@ -1052,7 +1067,7 @@ refs.nameText.textContent = normalizeLocalizedText(dict[dictKey + techId]);
 }
 function updateTransportRowNames() {
 const dict = getDict();
-document.querySelectorAll('.transport-needed-row').forEach((tr) => {
+getTransportRows().forEach((tr) => {
 const refs = tr._transportRefs;
 const shipId = tr.dataset.transport;
 if (refs && refs.nameSpan && dict['ship_' + shipId]) {
@@ -1061,6 +1076,14 @@ refs.nameSpan.textContent = normalizeLocalizedText(dict['ship_' + shipId]);
 if (refs && refs.chip) {
 refs.chip.title = normalizeLocalizedText(dict.transportCapacityLabel || '');
 }
+});
+}
+function updateResearchChipHints() {
+const hint = normalizeLocalizedText(getDict().researchDiscountHint || '');
+document.querySelectorAll('#tbodyResearch .disc-chip').forEach((chip) => {
+chip.dataset.hint = hint;
+const lb = chip.dataset.label || '';
+chip.title = lb ? `${hint} −${lb}%`.trim() : hint;
 });
 }
 function updateAllTableNamesOnly() {
@@ -1077,6 +1100,7 @@ updateFleetTableNames();
 updateLfTableNames('tbodyLfBuildings', 'lf_b_');
 updateLfTableNames('tbodyLfResearch', 'lf_r_');
 updateTransportRowNames();
+updateResearchChipHints();
 }
 function recalcStandardTable(tbodyId, dataArray, sumIds, isMoon = false) {
 const tbody = $(tbodyId);
@@ -1233,6 +1257,7 @@ refs.p.textContent = formatNumberWithDots(p);
 if (refs.chip) {
 const hint = refs.chip.dataset.hint || '';
 const label = getResearchDiscountLabel(idx);
+refs.chip.dataset.label = label;
 refs.chip.textContent = label ? `−${formatDiscountChip(label)}%` : '';
 refs.chip.title = label ? `${hint} −${label}%`.trim() : hint;
 }
@@ -1390,7 +1415,7 @@ fleetInputs.forEach((inp) => {
 const refs = inp.closest('tr')?._refs;
 const qty = parseInputValue(inp);
 if (qty <= 0) {
-inp.value = '';
+if (document.activeElement !== inp) inp.value = '';
 if (refs) refs.p.textContent = '0';
 return;
 }
@@ -1399,7 +1424,7 @@ if (!ship) return;
 fm = addCapped(fm, clampCalc(qty * ship.metal));
 fc = addCapped(fc, clampCalc(qty * ship.crystal));
 fd = addCapped(fd, clampCalc(qty * ship.deut));
-inp.value = formatWithDotsRaw(qty);
+if (document.activeElement !== inp) inp.value = formatWithDotsRaw(qty);
 const pts = clampCalc(((ship.metal + ship.crystal + ship.deut) / 1000) * qty);
 if (refs) refs.p.textContent = formatNumberWithDots(pts);
 fp = addCapped(fp, pts);
@@ -1834,6 +1859,8 @@ if (dict[opt.value]) opt.textContent = normalizeLocalizedText(dict[opt.value]);
 });
 if (dict.lfSelectLabel) lfSelect.setAttribute('aria-label', normalizeLocalizedText(dict.lfSelectLabel));
 }
+const fullResetBtn = $('settingsFullReset');
+if (fullResetBtn) fullResetBtn.textContent = normalizeLocalizedText(dict.settingsFullReset || 'Full reset');
 setLangLabel(lang);
 updatePerfToggleLang();
 if (skipRebuild) return;
@@ -2177,9 +2204,20 @@ frag.appendChild(tr);
 } else {
 rows.forEach((r) => frag.appendChild(createOverviewRow(r)));
 }
+const d2 = getDict();
+const trSum = document.createElement('tr');
+trSum.className = 'sum-all-tabs-row';
+trSum.innerHTML = `<td class="sum-label">${normalizeLocalizedText(d2.sumAllTabs || '')}</td><td></td><td></td><td></td><td class="m"><span class="val-metal sum-all-tabs-metal">0</span></td><td class="c"><span class="val-crystal sum-all-tabs-crystal">0</span></td><td class="d"><span class="val-deut sum-all-tabs-deut">0</span></td><td class="p"><span class="sum-all-tabs-points">0</span></td>`;
+frag.appendChild(trSum);
+const trTot = document.createElement('tr');
+trTot.className = 'sum-all-tabs-total-row';
+trTot.innerHTML = `<td class="sum-label">${normalizeLocalizedText(d2.totalInMetal || '')}</td><td></td><td></td><td></td><td class="m" colspan="3"><span class="sum-all-tabs-total">0</span></td><td class="p"></td>`;
+frag.appendChild(trTot);
 tbody.replaceChildren(frag);
 tbody._rowsCache = null;
+cachedAggrRows = null;
 ensureOverviewEditDelegation(tbody);
+updateSumAllTabsRows();
 }
 function ensureOverviewEditDelegation(tbody) {
 if (!tbody || tbody._overviewBound) return;
@@ -2377,13 +2415,16 @@ buildOverviewRows();
 } else {
 buildRowsBuildings();
 restoreInputRowsFromSelector('#tbodyBuildings tr[data-index]', KEYS.INPUTS_BUILD);
+restoreInputRowsFromSelector('#tbodyResearch tr[data-index]', KEYS.INPUTS_RESEARCH);
+restoreInputRowsFromSelector('#tbodyMoonBuildings tr[data-index]', KEYS.INPUTS_MOON_BUILD);
+restoreInputRowsFromSelector('#tbodyLfBuildings tr[data-index]', `${KEYS.LF_INPUTS_BUILD}_${currentLifeformRace}`);
+restoreInputRowsFromSelector('#tbodyLfResearch tr[data-index]', `${KEYS.LF_INPUTS_RESEARCH}_${currentLifeformRace}`);
 document.querySelectorAll('.building-subtab-btn').forEach((b) => b.classList.toggle('active', b.dataset.buildingTab === overviewPrevBuildingSub));
 $('planetBuildingsContent')?.classList.toggle('active', overviewPrevBuildingSub === 'planet');
 $('moonBuildingsContent')?.classList.toggle('active', overviewPrevBuildingSub === 'moon');
 setActiveTab(overviewPrevTab, true);
 restoreFleetQtyInputs();
-if (overviewPrevTab === 'fleet') computeFleet();
-recalcAllBuildings();
+recalcAll();
 }
 updateSumAllTabsRows();
 }
@@ -2394,7 +2435,7 @@ const boxValue = parseInputValue($('boxValue'));
 if (!boxValue || boxValue <= 0) {
 if (boxesNeededEl) boxesNeededEl.textContent = '—';
 const boxesCost = $('boxesCostTL');
-if (boxesCost) boxesCost.innerHTML = '—';
+if (boxesCost) boxesCost.textContent = '—';
 const leftover = $('leftoverTmValue');
 if (leftover) leftover.textContent = '—';
 return;
@@ -2620,100 +2661,17 @@ return window.panZoomMain;
 $('globalZoomIn')?.addEventListener('click', () => getActiveController()?.zoom(1.15));
 $('globalZoomOut')?.addEventListener('click', () => getActiveController()?.zoom(1 / 1.15));
 $('globalZoomReset')?.addEventListener('click', () => {
-const expWrapper = $('expeditionsWrapper');
-const housesWrapper = $('housesWrapper');
-const isExp = expWrapper && expWrapper.style.display !== 'none';
-const isHouses = housesWrapper && housesWrapper.style.display !== 'none';
-if (!isExp && !isHouses) fullResetToZero();
 getActiveController()?.reset();
 });
 }
 function fullResetToZero() {
-const lfSelect = $('lifeformSelect');
-const originalRace = normalizeRace(lfSelect ? lfSelect.value : 'humans');
-isSumAllTabsMode = false;
-const checkbox = $('sumAllTabsCheckbox');
-if (checkbox) checkbox.checked = false;
-setOverviewMode(false);
-const preservedKeys = [KEYS.TRANSFORM, KEYS.LANG];
-Object.values(KEYS).forEach((k) => {
-if (!preservedKeys.includes(k)) safeRemove(k);
-});
-['og_calc_active_view', 'og_calc_active_building_tab', 'og_calc_active_lf_subtab_v1', 'options_expeditions', 'og_expeditions_accordion_expanded', 'og_calc_expeditions_transform', 'og_calc_houses_race', 'og_calc_houses_transform'].forEach((k) => {
-safeRemove(k);
-});
+const preserved = [KEYS.LANG, SETTINGS_KEY, PERF_KEY];
 try {
 Object.keys(localStorage)
-.filter((k) => k.startsWith('og_calc_lf_inputs') || BONUS_INPUT_IDS.some((id) => k === `og_calc_${id}`))
+.filter((k) => (k.startsWith('og_calc') || k.startsWith('og_expeditions') || k === 'options_expeditions') && !preserved.includes(k))
 .forEach((k) => localStorage.removeItem(k));
 } catch (e) {}
-researchDiscounts = {};
-transportCapacities = { ...TRANSPORT_DEFAULTS };
-saveTransportCapacities();
-lfTotals = freshLfTotals();
-TOTALS.buildings = emptyTotals();
-TOTALS.moonBuildings = emptyTotals();
-TOTALS.research = emptyTotals();
-TOTALS.fleet = emptyTotals();
-const boxValueEl = $('boxValue');
-if (boxValueEl) boxValueEl.value = '';
-const tmInputEl = $('tmInput');
-if (tmInputEl) tmInputEl.value = '';
-['#tbodyBuildings', '#tbodyResearch', '#tbodyMoonBuildings'].forEach((sel) => {
-document.querySelectorAll(`${sel} input[data-type="from"],${sel} input[data-type="to"]`).forEach((inp) => { inp.value = ''; });
-document.querySelectorAll(`${sel} input[data-type="planets"],${sel} input[data-type="moons"]`).forEach((inp) => { inp.value = '1'; });
-});
-RACES.forEach((race) => {
-currentLifeformRace = race;
-calcCache.clear();
-buildRowsLfBuildings();
-buildRowsLfResearch();
-document.querySelectorAll('#tbodyLfBuildings input[data-type="from"],#tbodyLfBuildings input[data-type="to"],#tbodyLfResearch input[data-type="from"],#tbodyLfResearch input[data-type="to"]').forEach((inp) => { inp.value = ''; });
-document.querySelectorAll('#tbodyLfBuildings input[data-type="planets"],#tbodyLfResearch input[data-type="planets"]').forEach((inp) => { inp.value = '1'; });
-saveInputRowsFromSelector('#tbodyLfBuildings tr[data-index]', `${KEYS.LF_INPUTS_BUILD}_${race}`);
-saveInputRowsFromSelector('#tbodyLfResearch tr[data-index]', `${KEYS.LF_INPUTS_RESEARCH}_${race}`);
-recalcAllLfBuildings();
-recalcAllLfResearch();
-});
-currentLifeformRace = originalRace;
-if (lfSelect) lfSelect.value = originalRace;
-safeSet(KEYS.LF_RACE, originalRace);
-safeSet(KEYS.BASE_CURRENCY, 'TRY');
-safeSet(KEYS.CURRENCY, 'BYN');
-const baseCurrencySelector = $('baseCurrencySelector');
-if (baseCurrencySelector) baseCurrencySelector.value = 'TRY';
-const currencySelector = $('currencySelector');
-if (currencySelector) currencySelector.value = 'BYN';
-updateCurrencySymbol();
-fleetTableBuilt = false;
-calcCache.clear();
-buildRowsBuildings();
-buildRowsResearch();
-buildRowsMoonBuildings();
-buildRowsLfBuildings();
-buildRowsLfResearch();
-renderTable();
-recalcAll();
-updateLfBonusesVisibility(currentLifeformRace);
-['sumPointsB', 'sumPointsR', 'sumPointsLfB', 'sumPointsLfR'].forEach((id) => {
-const el = $(id);
-if (el) el.textContent = '0';
-});
-const boxesNeeded = $('boxesNeeded');
-if (boxesNeeded) boxesNeeded.textContent = '—';
-const boxesCost = $('boxesCostTL');
-if (boxesCost) boxesCost.innerHTML = '—';
-const leftover = $('leftoverTmValue');
-if (leftover) leftover.textContent = '—';
-const currencyValue = $('currencyValue');
-if (currencyValue) currencyValue.textContent = '0';
-if (typeof window.clearFleet === 'function') window.clearFleet();
-if (typeof window.updateExpeditionsLang === 'function') window.updateExpeditionsLang();
-if (typeof window.updateHousesLang === 'function') window.updateHousesLang();
-scheduleGlobalUpdate();
-saveLfTotals();
-switchView('costs');
-setActiveTab('buildings');
+location.reload();
 }
 function updateBackgroundImage(view) {
 const bgImage = $('bgImage');
@@ -2834,18 +2792,18 @@ currentSettings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 populateSettingsInputs();
 }
 const PERF_LABELS = {
-en: { section: 'Performance', mode: 'Performance mode' },
-ru: { section: 'Производительность', mode: 'Режим производительности' },
-de: { section: 'Leistung', mode: 'Leistungsmodus' },
-pl: { section: 'Wydajność', mode: 'Tryb wydajności' },
-es: { section: 'Rendimiento', mode: 'Modo de rendimiento' },
-fr: { section: 'Performance', mode: 'Mode performance' },
-it: { section: 'Prestazioni', mode: 'Modalità prestazioni' },
-nl: { section: 'Prestaties', mode: 'Prestatiemodus' },
-sk: { section: 'Výkon', mode: 'Režim výkonu' },
-tr: { section: 'Performans', mode: 'Performans modu' },
-pt: { section: 'Desempenho', mode: 'Modo de desempenho' },
-bs: { section: 'Performanse', mode: 'Režim performansi' }
+en: { mode: 'Performance mode' },
+ru: { mode: 'Режим производительности' },
+de: { mode: 'Leistungsmodus' },
+pl: { mode: 'Tryb wydajności' },
+es: { mode: 'Modo de rendimiento' },
+fr: { mode: 'Mode performance' },
+it: { mode: 'Modalità prestazioni' },
+nl: { mode: 'Prestatiemodus' },
+sk: { mode: 'Režim výkonu' },
+tr: { mode: 'Performans modu' },
+pt: { mode: 'Modo de desempenho' },
+bs: { mode: 'Režim performansi' }
 };
 const isPerfMode = () => safeGet(PERF_KEY, '0') === '1';
 function applyPerfMode(on) {
@@ -2900,6 +2858,18 @@ perfToggle.addEventListener('change', (e) => setPerfMode(e.target.checked));
 }
 updatePerfSwitchUI();
 updatePerfToggleLang();
+const footer = document.querySelector('.settings-modal__footer');
+if (footer && !$('settingsFullReset')) {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.id = 'settingsFullReset';
+btn.className = 'settings-modal__btn settings-modal__btn--reset';
+btn.textContent = normalizeLocalizedText(getDict().settingsFullReset || 'Full reset');
+btn.addEventListener('click', () => {
+if (window.confirm(normalizeLocalizedText(getDict().confirmFullReset || 'Delete all calculator data?'))) fullResetToZero();
+});
+footer.prepend(btn);
+}
 if (toggleBtn) {
 toggleBtn.addEventListener('click', (e) => {
 e.stopPropagation();
@@ -2947,7 +2917,6 @@ attachLiveThousandsFormatting('#boxValue');
 attachInputsHandlers();
 applyLang(currentLang(), true);
 restoreFromStorage();
-applyI18nAttributes();
 initPanZoom();
 initZoomControls();
 const savedLfSubtab = safeGet('og_calc_active_lf_subtab_v1', 'lf-buildings');
