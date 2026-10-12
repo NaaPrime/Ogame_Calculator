@@ -2776,7 +2776,7 @@ updateBackgroundImage(view);
 return;
 }
 if (bgVideo.style.display === 'none') bgVideo.style.display = '';
-const targetSrc = view === 'expeditions' ? 'images/background2.webm' : 'images/background.webm';
+const targetSrc = view === 'expeditions' ? 'images/background2.webm' : 'images/background.mp4';
 const current = bgVideo.getAttribute('src') || '';
 if (current !== targetSrc) {
 bgVideo.src = targetSrc;
