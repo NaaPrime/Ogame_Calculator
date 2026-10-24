@@ -150,7 +150,7 @@ const LF_TECH_COSTS = {
 3103:[15000,10000,5000,0,2500,1.5,1.5,1.5,0,1.4],3104:[20000,15000,7500,0,3500,1.3,1.3,1.3,0,1.3],
 3105:[160000,120000,50000,0,4500,1.5,1.5,1.5,0,1.4],3106:[50000,50000,20000,0,5000,1.5,1.5,1.5,0,1.3],
 3107:[70000,40000,20000,0,5500,1.3,1.3,1.3,0,1.3],3108:[160000,120000,50000,0,6000,1.5,1.5,1.5,0,1.4],
-3109:[160000,120000,50000,0,6500,1.5,1.5,1.5,0,1.4],3110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.3],
+3109:[160000,120000,50000,0,6500,1.5,1.5,1.5,0,1.4],3110:[85000,40000,35000,0,7000,1.2,1.2,1.2,0,1.2],
 3111:[120000,30000,25000,0,7500,1.3,1.3,1.3,0,1.3],3112:[160000,120000,50000,0,8000,1.5,1.5,1.5,0,1.4],
 3113:[200000,100000,100000,0,8500,1.5,1.5,1.5,0,1.3],3114:[160000,120000,50000,0,9000,1.5,1.5,1.5,0,1.4],
 3115:[320000,240000,100000,0,9500,1.5,1.5,1.5,0,1.4],3116:[320000,240000,100000,0,10000,1.5,1.5,1.5,0,1.4],
@@ -189,6 +189,7 @@ const LF_BUILDING_FILENAMES = {
 4007:'cloning_lab.png',4008:'chrysalis_accelerator.png',4009:'biomodifier.png',
 4010:'psionic_modulator.png',4011:'ship_production_hall.png',4012:'supra_refractor.png'
 };
+window.LF_BUILDING_FILENAMES = LF_BUILDING_FILENAMES;
 const LF_RESEARCH_FILENAMES = {
 1101:'intergalactic_envoys.png',1102:'high_efficiency_extractors.png',1103:'fusion_drives.png',
 1104:'stealth_field_generator.png',1105:'orbital_dock.png',1106:'research_ai.png',
@@ -1815,10 +1816,11 @@ b.classList.toggle('active', isActive);
 b.setAttribute('aria-selected', isActive ? 'true' : 'false');
 b.setAttribute('tabindex', isActive ? '0' : '-1');
 });
-const elMap = { buildings: 'tabBuildings', research: 'tabResearch', fleet: 'tabFleet', lifeforms: 'tabLifeforms' };
-['buildings', 'research', 'fleet', 'lifeforms'].forEach((t) => {
+const elMap = { buildings: 'tabBuildings', research: 'tabResearch', fleet: 'tabFleet', lifeforms: 'tabLifeforms', houses: 'tabHouses' };
+['buildings', 'research', 'fleet', 'lifeforms', 'houses'].forEach((t) => {
 $(elMap[t])?.classList.toggle('active', t === tab);
 });
+if (tab === 'houses' && typeof window.initHousesUI === 'function') window.initHousesUI();
 if (tab === 'lifeforms') {
 const activeSub = document.querySelector('.lf-subtab-btn.active')?.dataset.subtab || 'lf-buildings';
 activateLfSubtab(activeSub, skipRecalc);
@@ -1881,19 +1883,15 @@ return true;
 return false;
 }
 function switchView(newView) {
+if (newView === 'houses') newView = 'costs';
 document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === newView));
 const tableWrapper = $('tableWrapper');
 const expWrapper = $('expeditionsWrapper');
-const housesWrapper = $('housesWrapper');
 if (tableWrapper) tableWrapper.style.display = newView === 'costs' ? 'block' : 'none';
 if (expWrapper) expWrapper.style.display = newView === 'expeditions' ? 'block' : 'none';
-if (housesWrapper) housesWrapper.style.display = newView === 'houses' ? 'block' : 'none';
 if (newView === 'expeditions') {
 if (typeof window.initExpeditionUI === 'function') window.initExpeditionUI();
 window.panZoomExpeditions?.applyTransform();
-} else if (newView === 'houses') {
-initHousesSafe();
-window.panZoomHouses?.applyTransform();
 } else {
 window.panZoomMain?.applyTransform();
 updateTransportNeededRows();
@@ -2045,7 +2043,7 @@ const dict = getDict();
 const prefix = RACE_PREFIX[race] + (isBuilding ? '0' : '1');
 const maxItems = isBuilding ? 12 : 18;
 const { bld, rsr } = getLfRaceDiscounts(race);
-const source = 'lf_' + race + (isBuilding ? '_b' : '_r');
+const source = 'lf ' + race + (isBuilding ? ' b' : ' r');
 const rows = [];
 for (let i = 1; i <= maxItems; i++) {
 const techId = Number(prefix + String(i).padStart(2, '0'));
@@ -2243,8 +2241,8 @@ function overviewStorageKey(meta) {
 if (meta.source === 'buildings') return KEYS.INPUTS_BUILD;
 if (meta.source === 'moon') return KEYS.INPUTS_MOON_BUILD;
 if (meta.source === 'research') return KEYS.INPUTS_RESEARCH;
-if (meta.source.startsWith('lf_')) {
-const parts = meta.source.split('_');
+if (meta.source.startsWith('lf ')) {
+const parts = meta.source.split(' ');
 return (parts[2] === 'b' ? KEYS.LF_INPUTS_BUILD : KEYS.LF_INPUTS_RESEARCH) + '_' + parts[1];
 }
 return null;
@@ -2281,8 +2279,8 @@ m = Math.floor(m * k);
 c = Math.floor(c * k);
 d = Math.floor(d * k);
 }
-} else if (meta.source.startsWith('lf_')) {
-const parts = meta.source.split('_');
+} else if (meta.source.startsWith('lf ')) {
+const parts = meta.source.split(' ');
 const { bld, rsr } = getLfRaceDiscounts(parts[1]);
 const cost = parts[2] === 'b'
 ? getBuildCostLF(meta.techId, from, to, 0, bld)
@@ -2311,7 +2309,7 @@ else if (source === 'moon') TOTALS.moonBuildings = acc;
 else if (source === 'research') TOTALS.research = acc;
 else if (source === 'fleet') TOTALS.fleet = acc;
 else if (source.startsWith('lf')) {
-const parts = source.split('_');
+const parts = source.split(' ');
 lfTotals[parts[1]][parts[2] === 'b' ? 'buildings' : 'research'] = acc;
 saveLfTotals();
 }
@@ -2640,34 +2638,26 @@ this.handle?.removeEventListener('pointerdown', this._onPointerDown);
 }
 let panZoomMain = null;
 let panZoomExpeditions = null;
-let panZoomHouses = null;
 function initPanZoom() {
 if (panZoomMain) panZoomMain.destroy();
 if (panZoomExpeditions) panZoomExpeditions.destroy();
-if (panZoomHouses) panZoomHouses.destroy();
 panZoomMain = new PanZoomController('tableWrapper', 'dragHandle', KEYS.TRANSFORM);
 panZoomExpeditions = new PanZoomController('expeditionsWrapper', 'dragHandleExpeditions', 'og_calc_expeditions_transform');
-panZoomHouses = new PanZoomController('housesWrapper', 'dragHandleHouses', 'og_calc_houses_transform');
 window.panZoomMain = panZoomMain;
 window.panZoomExpeditions = panZoomExpeditions;
-window.panZoomHouses = panZoomHouses;
 }
 function initZoomControls() {
 const getActiveController = () => {
 const expWrapper = $('expeditionsWrapper');
 if (expWrapper && expWrapper.style.display !== 'none') return window.panZoomExpeditions;
-const housesWrapper = $('housesWrapper');
-if (housesWrapper && housesWrapper.style.display !== 'none') return window.panZoomHouses;
 return window.panZoomMain;
 };
 $('globalZoomIn')?.addEventListener('click', () => getActiveController()?.zoom(1.15));
 $('globalZoomOut')?.addEventListener('click', () => getActiveController()?.zoom(1 / 1.15));
 $('globalZoomReset')?.addEventListener('click', () => {
 const expWrapper = $('expeditionsWrapper');
-const housesWrapper = $('housesWrapper');
 const isExp = expWrapper && expWrapper.style.display !== 'none';
-const isHouses = housesWrapper && housesWrapper.style.display !== 'none';
-if (!isExp && !isHouses) fullResetToZero();
+if (!isExp) fullResetToZero();
 getActiveController()?.reset();
 });
 }
@@ -2994,6 +2984,7 @@ attachLiveThousandsFormatting('#boxValue');
 attachInputsHandlers();
 applyLang(currentLang(), true);
 restoreFromStorage();
+initHousesSafe();
 initPanZoom();
 initZoomControls();
 const savedLfSubtab = safeGet('og_calc_active_lf_subtab_v1', 'lf-buildings');
@@ -3011,16 +3002,13 @@ scheduleGlobalUpdate();
 });
 }
 const savedView = safeGet('og_calc_active_view', 'costs');
-switchView(savedView);
+switchView(savedView === 'houses' ? 'costs' : savedView);
 document.querySelectorAll('.nav-btn').forEach((btn) => {
 btn.addEventListener('click', () => switchView(btn.dataset.view));
 });
 window.addEventListener('load', () => {
 const view = safeGet('og_calc_active_view', 'costs');
-if (view === 'houses') {
-initHousesSafe();
-window.panZoomHouses?.applyTransform();
-} else if (view === 'expeditions') {
+if (view === 'expeditions') {
 if (typeof window.initExpeditionUI === 'function') window.initExpeditionUI();
 window.panZoomExpeditions?.applyTransform();
 }
