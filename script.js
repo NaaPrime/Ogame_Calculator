@@ -337,7 +337,7 @@ const hasDot = str.includes('.');
 let cleaned;
 if (hasComma && hasDot) {
 cleaned = str.lastIndexOf(',') > str.lastIndexOf('.')
-? str.replace(/\./g, '').replace(',', '.')
+? str.replace(/./g, '').replace(',', '.')
 : str.replace(/,/g, '');
 } else if (hasComma) {
 cleaned = str.replace(/,/g, '.');
@@ -1555,7 +1555,9 @@ if (!tbody) return;
 const persist = () => {
 const key = typeof storageKey === 'function' ? storageKey() : storageKey;
 if (!key) return;
-const rows = getRowRefs(tbody).map((tr) => {
+const rowEls = getRowRefs(tbody);
+if (!rowEls.length) return;
+const rows = rowEls.map((tr) => {
 const refs = tr._refs || {};
 return {
 from: parseInputValue(refs.from),
@@ -1565,12 +1567,17 @@ planets: parseInputValue(refs.planets) || 1
 });
 safeSetIdle(key, JSON.stringify(rows));
 };
-tbody.addEventListener('input', debounceAdaptive((e) => {
+const onInput = debounceAdaptive((e) => {
 if (e.target.matches('.lvl-input,.planet-input')) {
 recalcFn();
 persist();
 }
-}, 150, 300));
+}, 150, 300);
+tbody.addEventListener('input', (e) => {
+if (isSumAllTabsMode) return;
+if (e.target.closest && e.target.closest('tr.overview-list-row')) return;
+onInput(e);
+});
 };
 setupTable('tbodyBuildings', recalcAllBuildings, KEYS.INPUTS_BUILD);
 setupTable('tbodyResearch', recalcAllResearch, KEYS.INPUTS_RESEARCH);
@@ -1743,11 +1750,15 @@ planets: parseInputValue(refs.planets) || 1
 });
 }
 function persistLfInputs() {
-safeSet(`${KEYS.LF_INPUTS_BUILD}_${currentLifeformRace}`, JSON.stringify(collectRowData('#tbodyLfBuildings tr[data-index]')));
-safeSet(`${KEYS.LF_INPUTS_RESEARCH}_${currentLifeformRace}`, JSON.stringify(collectRowData('#tbodyLfResearch tr[data-index]')));
+const buildRows = collectRowData('#tbodyLfBuildings tr[data-index]');
+const researchRows = collectRowData('#tbodyLfResearch tr[data-index]');
+if (buildRows.length) safeSet(`${KEYS.LF_INPUTS_BUILD}_${currentLifeformRace}`, JSON.stringify(buildRows));
+if (researchRows.length) safeSet(`${KEYS.LF_INPUTS_RESEARCH}_${currentLifeformRace}`, JSON.stringify(researchRows));
 }
 function saveInputRowsFromSelector(selector, key) {
-safeSet(key, JSON.stringify(collectRowData(selector)));
+const rows = collectRowData(selector);
+if (!rows.length) return;
+safeSet(key, JSON.stringify(rows));
 }
 function saveAllInputsBeforeSwitch() {
 saveInputRowsFromSelector('#tbodyBuildings tr[data-index]', KEYS.INPUTS_BUILD);
@@ -2043,7 +2054,7 @@ const dict = getDict();
 const prefix = RACE_PREFIX[race] + (isBuilding ? '0' : '1');
 const maxItems = isBuilding ? 12 : 18;
 const { bld, rsr } = getLfRaceDiscounts(race);
-const source = 'lf ' + race + (isBuilding ? ' b' : ' r');
+const source = 'lf_' + race + (isBuilding ? '_b' : '_r');
 const rows = [];
 for (let i = 1; i <= maxItems; i++) {
 const techId = Number(prefix + String(i).padStart(2, '0'));
@@ -2241,8 +2252,8 @@ function overviewStorageKey(meta) {
 if (meta.source === 'buildings') return KEYS.INPUTS_BUILD;
 if (meta.source === 'moon') return KEYS.INPUTS_MOON_BUILD;
 if (meta.source === 'research') return KEYS.INPUTS_RESEARCH;
-if (meta.source.startsWith('lf ')) {
-const parts = meta.source.split(' ');
+if (meta.source.startsWith('lf_')) {
+const parts = meta.source.split('_');
 return (parts[2] === 'b' ? KEYS.LF_INPUTS_BUILD : KEYS.LF_INPUTS_RESEARCH) + '_' + parts[1];
 }
 return null;
@@ -2279,8 +2290,8 @@ m = Math.floor(m * k);
 c = Math.floor(c * k);
 d = Math.floor(d * k);
 }
-} else if (meta.source.startsWith('lf ')) {
-const parts = meta.source.split(' ');
+} else if (meta.source.startsWith('lf_')) {
+const parts = meta.source.split('_');
 const { bld, rsr } = getLfRaceDiscounts(parts[1]);
 const cost = parts[2] === 'b'
 ? getBuildCostLF(meta.techId, from, to, 0, bld)
@@ -2309,7 +2320,7 @@ else if (source === 'moon') TOTALS.moonBuildings = acc;
 else if (source === 'research') TOTALS.research = acc;
 else if (source === 'fleet') TOTALS.fleet = acc;
 else if (source.startsWith('lf')) {
-const parts = source.split(' ');
+const parts = source.split('_');
 lfTotals[parts[1]][parts[2] === 'b' ? 'buildings' : 'research'] = acc;
 saveLfTotals();
 }
@@ -2414,6 +2425,10 @@ $('moonBuildingsContent')?.classList.remove('active');
 buildOverviewRows();
 } else {
 buildRowsBuildings();
+buildRowsResearch();
+buildRowsMoonBuildings();
+buildRowsLfBuildings();
+buildRowsLfResearch();
 restoreInputRowsFromSelector('#tbodyBuildings tr[data-index]', KEYS.INPUTS_BUILD);
 restoreInputRowsFromSelector('#tbodyResearch tr[data-index]', KEYS.INPUTS_RESEARCH);
 restoreInputRowsFromSelector('#tbodyMoonBuildings tr[data-index]', KEYS.INPUTS_MOON_BUILD);
