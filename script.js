@@ -2443,6 +2443,10 @@ recalcAll();
 }
 updateSumAllTabsRows();
 }
+function setPacksCountText(value) {
+const el = $('packsCount');
+if (el) el.textContent = value;
+}
 function updateBoxesNeeded() {
 if (batchRecalc) return;
 const boxesNeededEl = $('boxesNeeded');
@@ -2453,6 +2457,7 @@ const boxesCost = $('boxesCostTL');
 if (boxesCost) boxesCost.textContent = '—';
 const leftover = $('leftoverTmValue');
 if (leftover) leftover.textContent = '—';
+setPacksCountText('');
 return;
 }
 const targetMetal = isSumAllTabsMode ? getSumAllTabsMetalValue() : getCurrentTotalMetalValue();
@@ -2469,6 +2474,7 @@ const setEmpty = (txt) => {
 boxesCostEl.textContent = txt;
 if (leftoverEl) leftoverEl.textContent = txt;
 if (currencyEl) currencyEl.textContent = txt === '—' ? '0' : txt;
+setPacksCountText('');
 };
 if (boxValue <= 0) return setEmpty('—');
 if (targetMetal === null) targetMetal = isSumAllTabsMode ? getSumAllTabsMetalValue() : getCurrentTotalMetalValue();
@@ -2478,6 +2484,7 @@ if (neededBoxes > 1e9) return setEmpty('—');
 const pack = CONFIG.TM_PACKS[0];
 if (!pack || pack.tm <= 0 || pack.priceTRY <= 0) return setEmpty('—');
 const packsCount = Math.max(1, Math.ceil(neededBoxes * CONFIG.TM_PER_BOX / pack.tm));
+setPacksCountText('×' + formatNumberWithDots(packsCount));
 const totalTRY = packsCount * pack.priceTRY;
 const leftoverTM = packsCount * pack.tm - neededBoxes * CONFIG.TM_PER_BOX;
 const baseCurrency = safeGet(KEYS.BASE_CURRENCY, 'TRY');
@@ -2751,6 +2758,7 @@ const boxesNeeded = $('boxesNeeded');
 if (boxesNeeded) boxesNeeded.textContent = '—';
 const boxesCost = $('boxesCostTL');
 if (boxesCost) boxesCost.textContent = '—';
+setPacksCountText('');
 const leftover = $('leftoverTmValue');
 if (leftover) leftover.textContent = '—';
 const currencyValue = $('currencyValue');
