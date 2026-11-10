@@ -1255,13 +1255,13 @@ tdTotalName.textContent = normalizeLocalizedText(dict.totalInMetal || 'Всег�
 const tdTotalQty = document.createElement('td');
 const tdTotalM = document.createElement('td');
 tdTotalM.className = 'm';
-tdTotalM.colSpan = 3;
+tdTotalM.colSpan = 4;
 const totalSpan = document.createElement('span');
 totalSpan.id = 'sumTotalMetalF';
 totalSpan.textContent = '0';
 tdTotalM.appendChild(totalSpan);
 const tdTotalP = document.createElement('td');
-trTotal.append(tdTotalName, tdTotalQty, tdTotalM, tdTotalP);
+trTotal.append(tdTotalName, tdTotalQty, tdTotalM);
 frag.appendChild(trTotal);
 const trSumAll = document.createElement('tr');
 trSumAll.className = 'sum-all-tabs-row';
