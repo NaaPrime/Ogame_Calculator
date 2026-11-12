@@ -47,14 +47,14 @@
     tr: 'Türkçe', pt: 'Português', bs: 'Bosanski'
   };
 
-  const THEMES = [
-    { video: 'images/background.mp4', image: 'images/background.jpg' },
-    { video: 'images/background2.webm', image: 'images/background2.jpg' },
-    { video: 'images/background3.webm', image: 'images/background3.jpg' },
-    { video: 'images/background4.webm', image: 'images/background4.jpg' },
-    { video: null, image: 'images/background.jpg' },
-    { video: null, image: 'images/background6.jpg' }
-  ];
+    const THEMES = [
+  { video: null, image: 'images/background6.jpg' },                       
+  { video: 'images/background2.webm', image: 'images/background2.jpg' },   
+  { video: 'images/background3.webm', image: 'images/background3.jpg' },   
+  { video: 'images/background4.webm', image: 'images/background4.jpg' },
+  { video: 'images/background.mp4', image: 'images/background.jpg' },      
+  { video: null, image: 'images/background.jpg' },                                 
+];
 
   const THEME_IMAGE_FALLBACK = 'images/background.jpg';
   const themeImageResolved = THEMES.map(() => THEME_IMAGE_FALLBACK);
