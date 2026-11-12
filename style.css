@@ -2177,3 +2177,18 @@ margin-right: auto;
 #tabLifeforms[data-race="rocktal"] .lf-bonuses { border-color: rgba(240, 180, 41, 0.35); }
 #tabLifeforms[data-race="mechas"] .lf-bonuses { border-color: rgba(126, 231, 135, 0.35); }
 #tabLifeforms[data-race="kaelesh"] .lf-bonuses { border-color: rgba(176, 122, 255, 0.35); }
+/* ===== PERF PATCH: статичный фон / слабые ПК ===== */
+html.perf-mode #bgVideo { display: none !important; }
+html.perf-mode .bg-image { display: block; }
+html.perf-mode .tab-panels { overscroll-behavior: contain; scroll-behavior: auto; }
+html.perf-mode .cost-table tbody tr:hover,
+html.perf-mode #shipsTable tbody tr:hover { background: inherit !important; box-shadow: none !important; }
+html.perf-mode .name-cell .icon,
+html.perf-mode img.th-res,
+html.perf-mode .th-res img { filter: none !important; }
+html.perf-mode input[type="text"]:focus { transform: none !important; box-shadow: none !important; }
+html.perf-mode .tab-content.active,
+html.perf-mode .subtab-content.active,
+html.perf-mode .building-subtab-content.active { animation: none !important; }
+/* пустая ячейка-заполнитель сетки экспедиций (перенос бустера) */
+.exp-grid .exp-field--filler { display: contents; }
